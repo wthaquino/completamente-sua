@@ -7,8 +7,6 @@ const enterBtn = document.getElementById('enterBtn');
 const mainContent = document.getElementById('main-content');
 const spotifyPlayer = document.getElementById('spotify-player');
 
-const splashScreen = document.getElementById('splash-screen');
-
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxCaption = document.getElementById('lightbox-caption');
@@ -30,7 +28,6 @@ let currentPage = 1;
 const photosPerPage = 4;
 let currentLightboxIndex = 0; 
 
-// NOVAS CHAVES DO CLOUDINARY
 const CLOUD_NAME = "dnzugrzdn";
 const UPLOAD_PRESET = "inteiramente-sua";
 
@@ -41,7 +38,6 @@ function applyBackground(imageUrl) {
   const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
 
   document.body.style.background = bgValue;
-  splashScreen.style.background = bgValue;
   introScreen.style.background = bgValue;
   
   const styles = {
@@ -51,7 +47,6 @@ function applyBackground(imageUrl) {
   };
   
   Object.assign(document.body.style, styles);
-  Object.assign(splashScreen.style, styles);
   Object.assign(introScreen.style, styles);
 }
 
@@ -98,9 +93,13 @@ async function deletePhoto(photoId) {
   try {
     await photosCollection.doc(photoId).delete();
     
-    // Tenta remover o arquivo da imagem do Cloudinary (opcional, mas bom)
-    // O Cloudinary é mais complexo para deletar via frontend, então
-    // vamos focar em remover a entrada do banco de dados (que esconde a foto).
+    const photoToDelete = photos.find(p => p.id === photoId);
+    if (photoToDelete && photoToDelete.storagePath) {
+       // Se o StoragePath existia (usado na fase de testes com Firebase Storage), remove.
+       // Caso contrário, Cloudinary não precisa.
+       // Você pode comentar esta linha se ela der erro após a migração total:
+       // await storage.ref(photoToDelete.storagePath).delete();
+    }
     
     await loadPhotos(); 
   } catch (error) {
@@ -210,8 +209,7 @@ function setupPagination(totalPages) {
     pageBtn.addEventListener('click', () => {
       currentPage = i;
       renderGalleryAndPagination();
-    }
-    );
+    });
     paginationControls.appendChild(pageBtn);
   }
 
@@ -233,25 +231,18 @@ function changePage(newPage) {
   renderGalleryAndPagination();
 }
 
+// Lógica de transição simplificada: Intro -> Main Content
 enterBtn.addEventListener('click', () => {
   introScreen.classList.add('fade-out');
   
   setTimeout(() => {
     introScreen.style.display = 'none';
-    splashScreen.classList.remove('hidden');
+    mainContent.classList.remove('hidden');
     
     const spotifySrc = spotifyPlayer.getAttribute('data-src');
     spotifyPlayer.setAttribute('src', spotifySrc);
-
-    setTimeout(() => {
-      splashScreen.classList.add('fade-out');
-
-      setTimeout(() => {
-        splashScreen.style.display = 'none';
-        mainContent.classList.remove('hidden');
-        loadPhotos(); 
-      }, 1000);
-    }, 3000);
+    
+    loadPhotos(); 
   }, 1000);
 });
 
@@ -435,7 +426,6 @@ changeBgBtn.addEventListener('click', async () => {
                 canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                 
-                // Upload do fundo para Cloudinary
                 const base64Image = canvas.toDataURL('image/jpeg', 0.6);
                 const downloadURL = await uploadToCloudinary(base64Image);
                 resolve(downloadURL);
@@ -443,7 +433,6 @@ changeBgBtn.addEventListener('click', async () => {
             img.src = e.target.result;
         });
 
-        // Salva a URL no Firestore (settings)
         await settingsDoc.set({ backgroundImageUrl: resizedUrl }, { merge: true });
         
         applyBackground(resizedUrl);
