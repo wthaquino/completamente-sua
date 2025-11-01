@@ -30,6 +30,10 @@ let currentPage = 1;
 const photosPerPage = 4;
 let currentLightboxIndex = 0; 
 
+// NOVAS CHAVES DO CLOUDINARY
+const CLOUD_NAME = "dnzugrzdn";
+const UPLOAD_PRESET = "inteiramente-sua";
+
 const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
 const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
 
@@ -94,10 +98,9 @@ async function deletePhoto(photoId) {
   try {
     await photosCollection.doc(photoId).delete();
     
-    const photoToDelete = photos.find(p => p.id === photoId);
-    if (photoToDelete && photoToDelete.storagePath) {
-       await storage.ref(photoToDelete.storagePath).delete();
-    }
+    // Tenta remover o arquivo da imagem do Cloudinary (opcional, mas bom)
+    // O Cloudinary é mais complexo para deletar via frontend, então
+    // vamos focar em remover a entrada do banco de dados (que esconde a foto).
     
     await loadPhotos(); 
   } catch (error) {
@@ -207,7 +210,8 @@ function setupPagination(totalPages) {
     pageBtn.addEventListener('click', () => {
       currentPage = i;
       renderGalleryAndPagination();
-    });
+    }
+    );
     paginationControls.appendChild(pageBtn);
   }
 
@@ -287,6 +291,26 @@ addPhotoBtn.addEventListener('click', () => {
   reader.readAsDataURL(file);
 });
 
+async function uploadToCloudinary(base64Image) {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+  
+  const formData = new FormData();
+  formData.append('file', base64Image);
+  formData.append('upload_preset', UPLOAD_PRESET);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+  if (data.secure_url) {
+    return data.secure_url;
+  } else {
+    throw new Error('Cloudinary upload failed: ' + (data.error ? data.error.message : 'Unknown error'));
+  }
+}
+
 function resizeAndUpload(dataURL, mimeType, caption, musicLink, button) {
   const MAX_WIDTH = 1920;
   const MAX_HEIGHT = 1080;
@@ -295,46 +319,37 @@ function resizeAndUpload(dataURL, mimeType, caption, musicLink, button) {
   img.src = dataURL;
   
   img.onload = async () => {
-    // 1. Redimensionamento
-    let width = img.width;
-    let height = img.height;
-
-    if (width > height) {
-      if (width > MAX_WIDTH) {
-        height = height * (MAX_WIDTH / width);
-        width = MAX_WIDTH;
-      }
-    } else {
-      if (height > MAX_HEIGHT) {
-        width = width * (MAX_HEIGHT / height);
-        height = MAX_HEIGHT;
-      }
-    }
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, width, height);
-    
-    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-    
-    // 2. Converte Base64 para Blob para upload
-    const response = await fetch(resizedDataUrl);
-    const blob = await response.blob();
-    
-    // 3. Faz o Upload para o Firebase Storage
-    const storagePath = `photos/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.jpg`;
-    const storageRef = storage.ref(storagePath);
-    
     try {
-        const snapshot = await storageRef.put(blob);
-        const downloadURL = await snapshot.ref.getDownloadURL();
+        // 1. Redimensionamento local
+        let width = img.width;
+        let height = img.height;
 
-        // 4. Salva a referência no Firestore
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = height * (MAX_WIDTH / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = width * (MAX_HEIGHT / height);
+            height = MAX_HEIGHT;
+          }
+        }
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // 2. Faz o Upload para o Cloudinary
+        const downloadURL = await uploadToCloudinary(resizedBase64);
+
+        // 3. Salva a referência no Firestore
         await photosCollection.add({
             url: downloadURL,
-            storagePath: storagePath, 
             caption: caption,
             musicLink: musicLink,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -408,7 +423,7 @@ changeBgBtn.addEventListener('click', async () => {
         const MAX_BG_WIDTH = 1920;
         const resizedUrl = await new Promise(resolve => {
             const img = new Image();
-            img.onload = () => {
+            img.onload = async () => {
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
@@ -419,22 +434,19 @@ changeBgBtn.addEventListener('click', async () => {
                 canvas.width = width;
                 canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.6));
+                
+                // Upload do fundo para Cloudinary
+                const base64Image = canvas.toDataURL('image/jpeg', 0.6);
+                const downloadURL = await uploadToCloudinary(base64Image);
+                resolve(downloadURL);
             };
             img.src = e.target.result;
         });
 
-        const response = await fetch(resizedUrl);
-        const blob = await response.blob();
-        const storagePath = `backgrounds/${Date.now()}.jpg`;
-        const storageRef = storage.ref(storagePath);
+        // Salva a URL no Firestore (settings)
+        await settingsDoc.set({ backgroundImageUrl: resizedUrl }, { merge: true });
         
-        const snapshot = await storageRef.put(blob);
-        const downloadURL = await snapshot.ref.getDownloadURL();
-
-        await settingsDoc.set({ backgroundImageUrl: downloadURL }, { merge: true });
-        
-        applyBackground(downloadURL);
+        applyBackground(resizedUrl);
         alert("Fundo alterado com sucesso! Visível para todos.");
         bgImageInput.value = '';
     } catch (error) {
