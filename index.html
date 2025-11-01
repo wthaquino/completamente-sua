@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nosso Cantinho 💕</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    #spotify-player {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+    #spotify-status {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="intro-screen">
+    <div class="heart"></div>
+    <h1>Bem-vindo(a) ao Nosso Cantinho 💖</h1>
+    <p class="intro-quote">
+      "Você transforma tudo à minha volta em um mundo colorido, obrigada por acender a luz."
+    </p>
+    <div class="intro-buttons">
+      <button id="enterBtn">Entrar</button>
+    </div>
+  </div>
+
+  <div id="main-content" class="hidden">
+    <header>
+      <h1>Nosso Cantinho 💕</h1>
+      <button id="editBtn">Modo Edição</button>
+    </header>
+
+    <main id="gallery">
+      <div class="navigation-buttons">
+        <button id="prevBtn">←</button>
+        <button id="nextBtn">→</button>
+      </div>
+    </main>
+
+    <div id="pagination-controls"></div>
+
+    <footer>
+      <p>Feito com 💗. Sou inteiramente sua.</p>
+    </footer>
+
+    <div id="editor" class="hidden">
+      <h2>Adicionar nova lembrança</h2>
+      <input type="file" id="imageInput" accept="image/*">
+      <input type="text" id="captionInput" placeholder="Legenda da foto">
+      <input type="text" id="musicLinkInput" placeholder="Link da música (opcional)">
+      <button id="addPhoto">Adicionar</button>
+
+      <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
+      <h2>Alterar Fundo da Página</h2>
+      <input type="file" id="bgImageInput" accept="image/*">
+      <button id="changeBgBtn">Salvar Fundo</button>
+      <button id="removeBgBtn" style="background-color: #ff3b3b; margin-top: 5px;">Remover Fundo</button>
+    </div>
+  </div>
+
+  <iframe 
+    data-testid="embed-iframe" 
+    id="spotify-player"
+    style="border-radius:12px" 
+    data-src="https://open.spotify.com/embed/track/21nV7Brjy93nQPM98QwIfr?utm_source=generator"
+    src=""
+    width="250" 
+    height="50" 
+    frameBorder="0" 
+    allowfullscreen="" 
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+    loading="lazy">
+  </iframe>
+
+  <div id="lightbox" class="hidden">
+    <div class="lightbox-content">
+      <span class="close-lightbox">×</span>
+      
+      <button id="lightbox-prev" class="lightbox-nav">←</button>
+      <img id="lightbox-img" src="" alt="Foto Ampliada">
+      <button id="lightbox-next" class="lightbox-nav">→</button>
+      
+      <div id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
