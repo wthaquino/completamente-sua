@@ -231,9 +231,12 @@ h1 {
 }
 #addPhoto {
   background: #ff5c8d;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
   color: #fff;
   font-weight: bold;
-  cursor: pointer;
 }
 #addPhoto:hover { background: #e64c7c; }
 
@@ -393,6 +396,7 @@ footer {
   font-size: 1.5em;
   color: white;
   cursor: pointer;
+  transition: background 0.3s;
   z-index: 1002;
 }
 .lightbox-nav:hover {
