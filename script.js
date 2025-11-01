@@ -7,6 +7,8 @@ const enterBtn = document.getElementById('enterBtn');
 const mainContent = document.getElementById('main-content');
 const spotifyPlayer = document.getElementById('spotify-player');
 
+const splashScreen = document.getElementById('splash-screen');
+
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxCaption = document.getElementById('lightbox-caption');
@@ -23,7 +25,7 @@ const paginationControls = document.getElementById('pagination-controls');
 const lightboxPrevBtn = document.getElementById('lightbox-prev');
 const lightboxNextBtn = document.getElementById('lightbox-next');
 
-let photos = JSON.parse(localStorage.getItem('photos')) || [];
+let photos = [];
 let currentPage = 1;
 const photosPerPage = 4;
 let currentLightboxIndex = 0; 
@@ -32,8 +34,10 @@ const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgb
 const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
 
 function applyBackground(imageUrl) {
-  const bgValue = `${bgGradient}, url(${imageUrl})`;
+  const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
+
   document.body.style.background = bgValue;
+  splashScreen.style.background = bgValue;
   introScreen.style.background = bgValue;
   
   const styles = {
@@ -43,32 +47,70 @@ function applyBackground(imageUrl) {
   };
   
   Object.assign(document.body.style, styles);
+  Object.assign(splashScreen.style, styles);
   Object.assign(introScreen.style, styles);
 }
 
-function removeBackground() {
-  const bgValue = bgGradientSolid;
-  document.body.style.background = bgValue;
-  introScreen.style.background = bgValue;
-  
-  const styles = {
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundAttachment: 'fixed'
-  };
-  
-  Object.assign(document.body.style, styles);
-  Object.assign(introScreen.style, styles);
+async function loadSettings() {
+  try {
+    const doc = await settingsDoc.get();
+    if (doc.exists && doc.data().backgroundImageUrl) {
+      applyBackground(doc.data().backgroundImageUrl);
+    } else {
+      removeBackground(); 
+    }
+  } catch (error) {
+    console.error("Erro ao carregar configurações:", error);
+    removeBackground();
+  }
+}
 
-  localStorage.removeItem('backgroundImage');
+async function removeBackground() {
+  applyBackground(null);
+  
+  try {
+    await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
+    alert("Fundo removido com sucesso!");
+  } catch (error) {
+    console.error("Erro ao remover fundo:", error);
+    alert("Erro ao remover fundo do Firebase.");
+  }
+}
+
+async function loadPhotos() {
+  try {
+    const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
+    
+    photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    renderGalleryAndPagination(); 
+  } catch (error) {
+    console.error("Erro ao carregar fotos:", error);
+    alert("Erro ao carregar fotos da nuvem.");
+  }
+}
+
+async function deletePhoto(photoId) {
+  try {
+    await photosCollection.doc(photoId).delete();
+    
+    const photoToDelete = photos.find(p => p.id === photoId);
+    if (photoToDelete && photoToDelete.storagePath) {
+       await storage.ref(photoToDelete.storagePath).delete();
+    }
+    
+    await loadPhotos(); 
+  } catch (error) {
+    console.error("Erro ao deletar foto:", error);
+    alert("Erro ao deletar foto da nuvem.");
+  }
 }
 
 function renderGalleryAndPagination() {
   gallery.innerHTML = '';
   paginationControls.innerHTML = '';
 
-  const reversedPhotos = photos.slice().reverse();
-  const totalPages = Math.ceil(reversedPhotos.length / photosPerPage);
+  const totalPages = Math.ceil(photos.length / photosPerPage);
 
   if (currentPage > totalPages) {
     currentPage = totalPages;
@@ -79,10 +121,10 @@ function renderGalleryAndPagination() {
 
   const startIndex = (currentPage - 1) * photosPerPage;
   const endIndex = startIndex + photosPerPage;
-  const photosToShow = reversedPhotos.slice(startIndex, endIndex);
+  const photosToShow = photos.slice(startIndex, endIndex);
 
   photosToShow.forEach(photo => {
-    const originalIndex = photos.indexOf(photo);
+    const originalIndex = photos.findIndex(p => p.id === photo.id);
     const div = document.createElement('div');
     div.className = 'photo';
     
@@ -91,8 +133,8 @@ function renderGalleryAndPagination() {
       : '';
 
     div.innerHTML = `
-      <button class="delete-btn" data-index="${originalIndex}">×</button>
-      <img src="${photo.src}" alt="${photo.caption}" data-original-index="${originalIndex}">
+      <button class="delete-btn" data-id="${photo.id}">×</button>
+      <img src="${photo.url}" alt="${photo.caption}" data-id="${photo.id}" data-index-in-page="${originalIndex}">
       <div class="caption">${photo.caption} ${musicIconHTML}</div>`;
     
     gallery.appendChild(div);
@@ -108,18 +150,15 @@ function showLightboxPhoto(index) {
 
   if (!photo) return;
 
-  lightboxImg.src = photo.src;
+  lightboxImg.src = photo.url;
   lightboxCaption.innerHTML = `<div>${photo.caption}</div>`; 
 
   if (photo.musicLink) {
     lightboxCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
   }
   
-  const reversedPhotos = photos.slice().reverse();
-  const reversedIndex = reversedPhotos.findIndex(p => photos.indexOf(p) === index);
-
-  lightboxPrevBtn.disabled = (reversedIndex === 0);
-  lightboxNextBtn.disabled = (reversedIndex === reversedPhotos.length - 1);
+  lightboxPrevBtn.disabled = (index === 0);
+  lightboxNextBtn.disabled = (index === photos.length - 1);
 }
 
 function setupLightboxListeners() {
@@ -127,7 +166,8 @@ function setupLightboxListeners() {
     img.addEventListener('click', (e) => {
       e.stopPropagation(); 
       
-      const originalIndex = parseInt(e.target.getAttribute('data-original-index'));
+      const photoId = e.target.getAttribute('data-id');
+      const originalIndex = photos.findIndex(p => p.id === photoId);
       
       showLightboxPhoto(originalIndex);
       
@@ -192,13 +232,22 @@ function changePage(newPage) {
 enterBtn.addEventListener('click', () => {
   introScreen.classList.add('fade-out');
   
-  const spotifySrc = spotifyPlayer.getAttribute('data-src');
-  spotifyPlayer.setAttribute('src', spotifySrc);
-
   setTimeout(() => {
     introScreen.style.display = 'none';
-    mainContent.classList.remove('hidden');
-    renderGalleryAndPagination();
+    splashScreen.classList.remove('hidden');
+    
+    const spotifySrc = spotifyPlayer.getAttribute('data-src');
+    spotifyPlayer.setAttribute('src', spotifySrc);
+
+    setTimeout(() => {
+      splashScreen.classList.add('fade-out');
+
+      setTimeout(() => {
+        splashScreen.style.display = 'none';
+        mainContent.classList.remove('hidden');
+        loadPhotos(); 
+      }, 1000);
+    }, 3000);
   }, 1000);
 });
 
@@ -223,67 +272,113 @@ addPhotoBtn.addEventListener('click', () => {
     alert("Selecione uma imagem 💞");
     return;
   }
+  if (!caption) {
+    alert("Adicione uma legenda! 💞");
+    return;
+  }
 
-  const MAX_WIDTH = 1920;
-  const MAX_HEIGHT = 1080;
+  addPhotoBtn.disabled = true;
+  addPhotoBtn.textContent = 'Enviando...';
 
   const reader = new FileReader();
-  
   reader.onload = e => {
-    const img = new Image();
-    img.src = e.target.result;
-    
-    img.onload = () => {
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > MAX_WIDTH) {
-          height = height * (MAX_WIDTH / width);
-          width = MAX_WIDTH;
-        }
-      } else {
-        if (height > MAX_HEIGHT) {
-          width = width * (MAX_HEIGHT / height);
-          height = MAX_HEIGHT;
-        }
-      }
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      const resizedSrc = canvas.toDataURL('image/jpeg', 0.8);
-
-      const newPhoto = { src: resizedSrc, caption, musicLink };
-      photos.push(newPhoto);
-      localStorage.setItem('photos', JSON.stringify(photos));
-      
-      fileInput.value = '';
-      captionInput.value = '';
-      musicLinkInput.value = '';
-      
-      currentPage = 1;
-      renderGalleryAndPagination();
-    };
+    resizeAndUpload(e.target.result, file.type, caption, musicLink, addPhotoBtn);
   };
-  
   reader.readAsDataURL(file);
 });
 
+function resizeAndUpload(dataURL, mimeType, caption, musicLink, button) {
+  const MAX_WIDTH = 1920;
+  const MAX_HEIGHT = 1080;
+  
+  const img = new Image();
+  img.src = dataURL;
+  
+  img.onload = async () => {
+    // 1. Redimensionamento
+    let width = img.width;
+    let height = img.height;
+
+    if (width > height) {
+      if (width > MAX_WIDTH) {
+        height = height * (MAX_WIDTH / width);
+        width = MAX_WIDTH;
+      }
+    } else {
+      if (height > MAX_HEIGHT) {
+        width = width * (MAX_HEIGHT / height);
+        height = MAX_HEIGHT;
+      }
+    }
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    
+    // 2. Converte Base64 para Blob para upload
+    const response = await fetch(resizedDataUrl);
+    const blob = await response.blob();
+    
+    // 3. Faz o Upload para o Firebase Storage
+    const storagePath = `photos/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.jpg`;
+    const storageRef = storage.ref(storagePath);
+    
+    try {
+        const snapshot = await storageRef.put(blob);
+        const downloadURL = await snapshot.ref.getDownloadURL();
+
+        // 4. Salva a referência no Firestore
+        await photosCollection.add({
+            url: downloadURL,
+            storagePath: storagePath, 
+            caption: caption,
+            musicLink: musicLink,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        alert("Foto adicionada com sucesso! (Visível para todos)");
+        
+        document.getElementById('imageInput').value = '';
+        document.getElementById('captionInput').value = '';
+        musicLinkInput.value = '';
+        
+        currentPage = 1;
+        await loadPhotos();
+    } catch (error) {
+        console.error("Erro ao subir a foto:", error);
+        alert("Erro ao enviar a foto para a nuvem. Verifique o console para detalhes.");
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Adicionar';
+    }
+  };
+}
+
 gallery.addEventListener('click', (e) => {
   if (e.target.classList.contains('delete-btn')) {
-    if (!confirm("Tem certeza que quer apagar esta foto?")) {
+    if (!confirm("Tem certeza que quer apagar esta foto? Esta ação não pode ser desfeita.")) {
       return;
     }
-    const index = e.target.getAttribute('data-index');
-    photos.splice(index, 1);
-    localStorage.setItem('photos', JSON.stringify(photos));
-    
-    renderGalleryAndPagination();
+    const photoId = e.target.getAttribute('data-id');
+    deletePhoto(photoId);
+  }
+});
+
+lightboxPrevBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (currentLightboxIndex > 0) {
+    showLightboxPhoto(currentLightboxIndex - 1);
+  }
+});
+
+lightboxNextBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (currentLightboxIndex < photos.length - 1) {
+    showLightboxPhoto(currentLightboxIndex + 1);
   }
 });
 
@@ -297,79 +392,62 @@ lightbox.addEventListener('click', (e) => {
   }
 });
 
-lightboxPrevBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-
-  const reversedPhotos = photos.slice().reverse();
-  const currentReversedIndex = reversedPhotos.findIndex(p => photos.indexOf(p) === currentLightboxIndex);
-
-  if (currentReversedIndex > 0) {
-    const newReversedIndex = currentReversedIndex - 1;
-    const newPhoto = reversedPhotos[newReversedIndex];
-    showLightboxPhoto(photos.indexOf(newPhoto));
-  }
-});
-
-lightboxNextBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-
-  const reversedPhotos = photos.slice().reverse();
-  const currentReversedIndex = reversedPhotos.findIndex(p => photos.indexOf(p) === currentLightboxIndex);
-
-  if (currentReversedIndex < reversedPhotos.length - 1) {
-    const newReversedIndex = currentReversedIndex + 1;
-    const newPhoto = reversedPhotos[newReversedIndex];
-    showLightboxPhoto(photos.indexOf(newPhoto));
-  }
-});
-
-changeBgBtn.addEventListener('click', () => {
+changeBgBtn.addEventListener('click', async () => {
   const file = bgImageInput.files[0];
   if (!file) {
     alert("Selecione uma imagem de fundo.");
     return;
   }
-  
-  const MAX_WIDTH = 1920;
-  const MAX_HEIGHT = 1920; 
+
+  changeBgBtn.disabled = true;
+  changeBgBtn.textContent = 'Enviando...';
 
   const reader = new FileReader();
-  reader.onload = e => {
-     const img = new Image();
-     img.src = e.target.result;
-     img.onload = () => {
-         let width = img.width;
-         let height = img.height;
-         
-         if (width > height) {
-           if (width > MAX_WIDTH) {
-             height = height * (MAX_WIDTH / width);
-             width = MAX_WIDTH;
-           }
-         } else {
-           if (height > MAX_HEIGHT) {
-             width = width * (MAX_HEIGHT / height);
-             height = MAX_HEIGHT;
-           }
-         }
-         
-         const canvas = document.createElement('canvas');
-         canvas.width = width;
-         canvas.height = height;
-         const ctx = canvas.getContext('2d');
-         ctx.drawImage(img, 0, 0, width, height);
-         
-         const resizedSrc = canvas.toDataURL('image/jpeg', 0.8); 
+  reader.onload = async e => {
+    try {
+        const MAX_BG_WIDTH = 1920;
+        const resizedUrl = await new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > MAX_BG_WIDTH) {
+                    height = height * (MAX_BG_WIDTH / width);
+                    width = MAX_BG_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.6));
+            };
+            img.src = e.target.result;
+        });
 
-         localStorage.setItem('backgroundImage', resizedSrc);
-         applyBackground(resizedSrc);
-         
-         alert("Fundo alterado!");
-         bgImageInput.value = '';
-     };
+        const response = await fetch(resizedUrl);
+        const blob = await response.blob();
+        const storagePath = `backgrounds/${Date.now()}.jpg`;
+        const storageRef = storage.ref(storagePath);
+        
+        const snapshot = await storageRef.put(blob);
+        const downloadURL = await snapshot.ref.getDownloadURL();
+
+        await settingsDoc.set({ backgroundImageUrl: downloadURL }, { merge: true });
+        
+        applyBackground(downloadURL);
+        alert("Fundo alterado com sucesso! Visível para todos.");
+        bgImageInput.value = '';
+    } catch (error) {
+        console.error("Erro ao alterar fundo:", error);
+        alert("Erro ao alterar fundo.");
+    } finally {
+        changeBgBtn.disabled = false;
+        changeBgBtn.textContent = 'Salvar Fundo';
+    }
   };
   reader.readAsDataURL(file);
 });
+
 
 removeBgBtn.addEventListener('click', () => {
   if (confirm("Tem certeza que quer remover o fundo personalizado?")) {
@@ -378,9 +456,5 @@ removeBgBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-   const savedBg = localStorage.getItem('backgroundImage');
-   if (savedBg) {
-     applyBackground(savedBg);
-   }
-   renderGalleryAndPagination();
+   loadSettings(); 
 });

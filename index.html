@@ -6,23 +6,13 @@
   <title>Nosso Cantinho 💕</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    #spotify-player {
-      position: fixed;
-      bottom: 15px;
-      right: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      z-index: 999;
-    }
-    #spotify-status {
-      margin-top: 10px;
-      font-size: 0.95rem;
-      color: #444;
-    }
-  </style>
 </head>
 <body>
+  
+  <div id="splash-screen" class="hidden">
+    <p class="splash-text">Feliz dois anos,</p>
+    <p class="splash-text">Eu amo você ❤️</p>
+  </div>
 
   <div id="intro-screen">
     <div class="heart"></div>
@@ -94,6 +84,30 @@
       <div id="lightbox-caption"></div>
     </div>
   </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnx2V3kPc9U94qJoEsV-eIaoAChR7ety0",
+      authDomain: "inteiramene-sua.firebaseapp.com",
+      databaseURL: "https://inteiramene-sua-default-rtdb.firebaseio.com",
+      projectId: "inteiramene-sua",
+      storageBucket: "inteiramene-sua.firebasestorage.app",
+      messagingSenderId: "801226819273",
+      appId: "1:801226819273:web:107cc21e7e687a1d7a2f18",
+      measurementId: "G-HTCHMNYKTF"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    const photosCollection = db.collection("photos");
+    const settingsDoc = db.collection("settings").doc("appSettings");
+  </script>
 
   <script src="script.js"></script>
 </body>
