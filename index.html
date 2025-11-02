@@ -51,22 +51,22 @@
       opacity: 0.9;
     }
 
-    .intro-buttons {
-      margin-top: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    #musicBtn, #enterBtn {
-      background: #ff5c8d;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 8px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background 0.3s;
+  	.intro-buttons {
+  	  margin-top: 40px;
+  	  display: flex;
+  	  flex-direction: column;
+  	  gap: 15px;
+  	}
+  	#musicBtn, #enterBtn {
+  	  background: #ff5c8d;
+  	  border: none;
+  	  padding: 12px 25px;
+  	  border-radius: 8px;
+  	  color: #fff;
+  	  font-weight: bold;
+  	  font-size: 1em;
+  	  cursor: pointer;
+  	  transition: background 0.3s;
   	}
   	#musicBtn:hover, #enterBtn:hover { background: #e64c7c; }
 
@@ -357,7 +357,7 @@
   	  position: absolute;
   	  top: 50%;
   	  transform: translateY(-50%);
-Ind   background: rgba(255, 255, 255, 0.3);
+  	  background: rgba(255, 255, 255, 0.3);
   	  border: none;
   	  border-radius: 50%;
   	  width: 40px;
@@ -381,7 +381,7 @@ Ind   background: rgba(255, 255, 255, 0.3);
   	}
   	#lightbox-next {
   	  right: 30px;
-  	}
+content   }
 
   	#spotify-player {
   	  position: fixed;
@@ -449,7 +449,7 @@ Ind   background: rgba(255, 255, 255, 0.3);
   <iframe 
   	id="spotify-player"
   	style="border-radius:12px"
-  	src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" 
+  	src="https://open.spotify.com/embed/..." 
   	width="250" 
   	height="80" 
   	frameBorder="0" 
@@ -592,7 +592,7 @@ Ind   background: rgba(255, 255, 255, 0.3);
   	    console.error("Erro ao deletar foto:", error);
   	    alert("Erro ao deletar foto da nuvem.");
   	  }
-	}
+  	}
 
   	function renderGalleryAndPagination() {
   	  gallery.innerHTML = '';
@@ -705,7 +705,7 @@ Ind   background: rgba(255, 255, 255, 0.3);
   	  nextBtn.disabled = currentPage === totalPages;
   	  nextBtn.addEventListener('click', () => {
   	    if (currentPage < totalPages) {
-Ind   	    currentPage++;
+i   	      currentPage++;
   	      renderGalleryAndPagination();
   	    }
   	  });
@@ -720,7 +720,7 @@ Ind   	    currentPage++;
   	enterBtn.addEventListener('click', () => {
   	  introScreen.classList.add('fade-out');
   	  
-	  setTimeout(() => {
+  	  setTimeout(() => {
   	    introScreen.style.display = 'none';
   	    mainContent.classList.remove('hidden');
   	    
@@ -880,7 +880,7 @@ Ind   	    currentPage++;
   	changeBgBtn.addEventListener('click', async () => {
   	  const file = bgImageInput.files[0];
   	  if (!file) {
-  	    alert("Selecione uma imagem de fundo.");
+Ind   	    alert("Selecione uma imagem de fundo.");
   	    return;
   	  }
 
@@ -930,7 +930,7 @@ Ind   	    currentPage++;
 
   	removeBgBtn.addEventListener('click', () => {
   	  if (confirm("Tem certeza que quer remover o fundo personalizado?")) {
-ind   	    removeBackground();
+  	    removeBackground();
   	  }
   	});
 
@@ -955,7 +955,7 @@ ind   	    removeBackground();
   	  spotifyPlayer.style.right = 'auto';
   	  spotifyPlayer.style.bottom = 'auto';
   	  spotifyPlayer.style.left = startLeft + 'px';
-  	  spotifyPlayer.style.top = startTop + 'px';
+Ind   spotifyPlayer.style.top = startTop + 'px';
 
   	  spotifyPlayer.style.pointerEvents = 'none';
   	  document.body.style.userSelect = 'none';
@@ -978,7 +978,7 @@ ind   	    removeBackground();
   	  isDragging = false;
   	  spotifyPlayer.style.pointerEvents = 'auto';
   	  document.body.style.userSelect = 'auto';
-  	}
+A 	}
 
   	spotifyPlayer.addEventListener('mousedown', startDrag);
   	document.addEventListener('mousemove', doDrag);
