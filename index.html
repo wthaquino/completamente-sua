@@ -230,7 +230,7 @@
     .edit-btn-card {
       position: absolute;
       top: 10px;
-      right: 55px; /* Fica ao lado do botão de apagar */
+      right: 55px;
       background: #ffbcda;
       color: #8e1e5c;
       border: none;
@@ -292,7 +292,7 @@
     }
     .hidden { display: none; }
 
-    /* ---- Animações ---- */
+    /* ---- Animações Base ---- */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -300,6 +300,29 @@
     @keyframes fadeInScale {
       from { opacity: 0; transform: scale(0.9) translateY(20px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ---- NOVO: Efeito Chuva de Corações ---- */
+    .floating-heart {
+      position: fixed;
+      bottom: -10vh;
+      font-size: 2rem;
+      z-index: 9999;
+      pointer-events: none;
+      animation: floatUp ease-in forwards;
+      opacity: 0;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(0.5) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-120vh) scale(1.5) rotate(360deg);
+        opacity: 0;
+      }
     }
 
     /* ---- Lightbox ---- */
@@ -474,7 +497,7 @@
     </div>
   </div>
 
-  <!-- NOVO: Modal de Edição de Foto -->
+  <!-- Modal de Edição de Foto -->
   <div id="edit-photo-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2600; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
     <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 450px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
       <button id="closeEditModalBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
@@ -510,7 +533,6 @@
       <input type="text" id="captionInput" placeholder="Legenda ou história da foto">
       <input type="text" id="musicLinkInput" placeholder="Link do Spotify (opcional)">
       
-      <!-- Campo da Cápsula do Tempo -->
       <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação (Cápsula do tempo) ⏳:</p>
       <input type="date" id="unlockDateInput" title="Deixe vazio para mostrar na hora">
       
@@ -609,6 +631,27 @@
       setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
+    // ---- NOVO: Efeito Chuva de Corações JS ----
+    function createHeartShower() {
+      const emojis = ['❤️', '💖', '💕', '✨', '😍'];
+      for (let i = 0; i < 40; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 3) + 's'; 
+        heart.style.animationDelay = Math.random() * 1.5 + 's'; 
+        heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem'; 
+        
+        document.body.appendChild(heart);
+        
+        setTimeout(() => {
+          heart.remove();
+        }, 7000); 
+      }
+    }
+
     // ---- Lógica de Fundo da Página ----
     function applyBackground(imageUrl) {
       const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
@@ -665,7 +708,6 @@
         const originalIndex = photos.findIndex(p => p.id === photo.id);
         const div = document.createElement('div');
         
-        // Lógica da Cápsula do Tempo
         const hoje = new Date().toISOString().split('T')[0];
         const isLocked = photo.unlockDate && photo.unlockDate > hoje;
         
@@ -681,7 +723,6 @@
           textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
         }
 
-        // NOVO: Adicionado botão de Editar (lápis)
         div.innerHTML = `
           <button class="delete-btn" data-id="${photo.id}" title="Apagar Lembrança">×</button>
           <button class="edit-btn-card" data-id="${photo.id}" title="Editar Lembrança">✏️</button>
@@ -772,6 +813,8 @@
     // ---- Interações Iniciais e Login Customizado ----
     document.getElementById('enterBtn').onclick = () => {
       introScreen.classList.add('fade-out');
+      createHeartShower(); // Aciona a chuva de corações ao entrar!
+      
       setTimeout(() => {
         introScreen.style.display = 'none';
         mainContent.classList.remove('hidden');
@@ -866,6 +909,8 @@
             });
             
             showToast("Memória guardada com sucesso! 💖");
+            createHeartShower(); // Aciona a chuva de corações ao guardar uma memória!
+            
             document.getElementById('imageInput').value = '';
             document.getElementById('captionInput').value = '';
             document.getElementById('musicLinkInput').value = '';
@@ -936,7 +981,7 @@
         });
         showToast("Lembrança atualizada! ✨");
         document.getElementById('edit-photo-modal').style.display = 'none';
-        await loadPhotos(); // Recarrega a galeria para mostrar as mudanças
+        await loadPhotos(); 
       } catch (error) {
         showToast("Erro ao atualizar a lembrança.");
       } finally {
