@@ -127,16 +127,29 @@
       min-height: 50vh;
     }
 
+    /* ---- CSS MODIFICADO: Glassmorphism nas Fotos ---- */
     .photo {
       position: relative; 
       width: 100%;
-      opacity: 1;
-      display: block;
       aspect-ratio: 1 / 1; 
-      border-radius: 10px; 
+      border-radius: 15px; 
       overflow: hidden; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+      opacity: 0;
+      animation: fadeInScale 0.6s ease forwards;
     }
+
+    .photo:hover {
+      transform: scale(1.03) translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
     .photo img {
       width: 100%;
       height: 100%;
@@ -144,17 +157,20 @@
       display: block;
       cursor: pointer;
     }
+
+    /* ---- CSS MODIFICADO: Legendas Gradiente ---- */
     .caption {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
       text-align: center;
-      font-size: 1em;
+      font-size: 0.95em;
       color: #fff;
-      background: rgba(0,0,0,0.6);
-      padding: 5px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      padding: 20px 10px 10px;
       box-sizing: border-box;
+      font-weight: 600;
     }
 
     .navigation-buttons {
@@ -220,6 +236,12 @@
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- CSS MODIFICADO: Animação de Entrada das Fotos ---- */
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     #lightbox {
@@ -447,6 +469,9 @@
     </div>
   </div>
 
+  <!-- HTML MODIFICADO: Sistema de Notificação Toast -->
+  <div id="toast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background: #fff; color: #8e1e5c; border-radius: 50px; font-weight: bold; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></div>
+
   <iframe 
     data-testid="embed-iframe" 
     id="spotify-player"
@@ -536,6 +561,16 @@
     const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
     const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
 
+    // JS MODIFICADO: Função do Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
     function applyBackground(imageUrl) {
       const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
 
@@ -571,10 +606,10 @@
       
       try {
         await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
-        alert("Fundo removido com sucesso!");
+        showToast("Fundo removido com sucesso!");
       } catch (error) {
         console.error("Erro ao remover fundo:", error);
-        alert("Erro ao remover fundo do Firebase.");
+        showToast("Erro ao remover fundo do Firebase.");
       }
     }
 
@@ -587,7 +622,7 @@
         renderGalleryAndPagination(); 
       } catch (error) {
         console.error("Erro ao carregar fotos:", error);
-        alert("Erro ao carregar fotos da nuvem.");
+        showToast("Erro ao carregar fotos da nuvem.");
       }
     }
 
@@ -597,7 +632,7 @@
         await loadPhotos(); 
       } catch (error) {
         console.error("Erro ao deletar foto:", error);
-        alert("Erro ao deletar foto da nuvem.");
+        showToast("Erro ao deletar foto da nuvem.");
       }
     }
 
@@ -618,11 +653,15 @@
       const endIndex = startIndex + photosPerPage;
       const photosToShow = photos.slice(startIndex, endIndex);
 
-      photosToShow.forEach(photo => {
+      // JS MODIFICADO: Adicionado 'index' para o delay dinâmico
+      photosToShow.forEach((photo, index) => {
         const originalIndex = photos.findIndex(p => p.id === photo.id);
         const div = document.createElement('div');
         div.className = 'photo';
         
+        // Aplica o atraso na animação baseado na posição da foto
+        div.style.animationDelay = `${index * 0.15}s`;
+
         const musicIconHTML = photo.musicLink 
           ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` 
           : '';
@@ -744,7 +783,7 @@
         editor.classList.toggle('hidden');
         mainContent.classList.toggle('edit-mode-active');
       } else {
-        alert("Senha incorreta 💔");
+        showToast("Senha incorreta 💔");
       }
     });
 
@@ -756,11 +795,11 @@
       const musicLink = musicLinkInput.value;
 
       if (!file) {
-        alert("Selecione uma imagem 💞");
+        showToast("Selecione uma imagem 💞");
         return;
       }
       if (!caption) {
-        alert("Adicione uma legenda! 💞");
+        showToast("Adicione uma legenda! 💞");
         return;
       }
 
@@ -835,7 +874,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            alert("Foto adicionada com sucesso! (Visível para todos)");
+            showToast("Foto adicionada com sucesso! 💖");
             
             document.getElementById('imageInput').value = '';
             document.getElementById('captionInput').value = '';
@@ -845,7 +884,7 @@
             await loadPhotos();
         } catch (error) {
             console.error("Erro ao subir a foto:", error);
-            alert("Erro ao enviar a foto para a nuvem. Verifique o console para detalhes.");
+            showToast("Erro ao enviar a foto para a nuvem.");
         } finally {
             button.disabled = false;
             button.textContent = 'Adicionar';
@@ -890,7 +929,7 @@
     changeBgBtn.addEventListener('click', async () => {
       const file = bgImageInput.files[0];
       if (!file) {
-        alert("Selecione uma imagem de fundo.");
+        showToast("Selecione uma imagem de fundo.");
         return;
       }
 
@@ -925,11 +964,11 @@
             await settingsDoc.set({ backgroundImageUrl: resizedUrl }, { merge: true });
             
             applyBackground(resizedUrl);
-            alert("Fundo alterado com sucesso! Visível para todos.");
+            showToast("Fundo alterado com sucesso! ✨");
             bgImageInput.value = '';
         } catch (error) {
             console.error("Erro ao alterar fundo:", error);
-            alert("Erro ao alterar fundo.");
+            showToast("Erro ao alterar fundo.");
         } finally {
             changeBgBtn.disabled = false;
             changeBgBtn.textContent = 'Salvar Fundo';
@@ -937,7 +976,6 @@
       };
       reader.readAsDataURL(file);
     });
-
 
     removeBgBtn.addEventListener('click', () => {
       if (confirm("Tem certeza que quer remover o fundo personalizado?")) {
