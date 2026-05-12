@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
   
   <style>
-    /* ---- Início do CSS ---- */
+    /* ---- Estilos Globais ---- */
     body {
       font-family: "Quicksand", sans-serif;
       background: linear-gradient(to bottom right, #8e1e5c, #d86ca3);
@@ -58,6 +58,7 @@
       flex-direction: column;
       gap: 15px;
     }
+
     #musicBtn, #enterBtn {
       background: #ff5c8d;
       border: none;
@@ -89,6 +90,7 @@
     }
     .heart::before { top: -50px; left: 0; }
     .heart::after { left: 50px; top: 0; }
+    
     @keyframes pulse {
       0%, 100% { transform: scale(1) rotate(-45deg); }
       50% { transform: scale(1.1) rotate(-45deg); }
@@ -96,13 +98,17 @@
 
     header {
       background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 25px;
-      box-shadow: 0 0 15px rgba(255, 182, 193, 0.5);
+      box-shadow: 0 0 15px rgba(255, 182, 193, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     h1 {
       font-family: "Dancing Script", cursive;
       font-size: 2.8em;
       color: #fff;
+      margin: 0;
     }
     #editBtn {
       background: #ff5c8d;
@@ -112,22 +118,24 @@
       cursor: pointer;
       color: #fff;
       font-weight: bold;
+      margin-top: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
-    #editBtn:hover { background: #e64c7c; }
+    #editBtn:hover { background: #e64c7c; transform: translateY(-2px); }
 
+    /* ---- Galeria e Efeito Glassmorphism ---- */
     #gallery {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 15px; 
+      gap: 20px; 
       width: 90%; 
       max-width: 900px; 
-      margin: 20px auto; 
+      margin: 30px auto; 
       padding: 10px;
       box-sizing: border-box;
       min-height: 50vh;
     }
 
-    /* ---- CSS MODIFICADO: Glassmorphism nas Fotos ---- */
     .photo {
       position: relative; 
       width: 100%;
@@ -156,9 +164,9 @@
       object-fit: cover; 
       display: block;
       cursor: pointer;
+      transition: transform 0.4s ease;
     }
 
-    /* ---- CSS MODIFICADO: Legendas Gradiente ---- */
     .caption {
       position: absolute;
       bottom: 0;
@@ -167,15 +175,39 @@
       text-align: center;
       font-size: 0.95em;
       color: #fff;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-      padding: 20px 10px 10px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+      padding: 25px 10px 12px;
       box-sizing: border-box;
       font-weight: 600;
     }
 
-    .navigation-buttons {
-      display: none;
+    /* ---- CSS NOVO: Cápsula do Tempo ---- */
+    .photo.locked img {
+      filter: blur(15px) grayscale(40%);
+      transform: scale(1.1); 
+      cursor: not-allowed;
     }
+    .photo.locked:hover img {
+      transform: scale(1.1); 
+    }
+    .lock-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4em;
+      z-index: 5;
+      text-shadow: 0 0 20px rgba(0,0,0,0.8);
+      pointer-events: none; 
+    }
+    .photo.locked .caption {
+      font-style: italic;
+      color: #ffbcda;
+      background: rgba(0,0,0,0.9);
+    }
+
+    /* ---- Botoes e Editor ---- */
+    .navigation-buttons { display: none; }
 
     .delete-btn {
       position: absolute;
@@ -185,13 +217,14 @@
       color: white;
       border: none;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      font-size: 1.2em;
+      width: 35px;
+      height: 35px;
+      font-size: 1.4em;
       font-weight: bold;
       cursor: pointer;
       z-index: 10;
       display: none; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     #main-content.edit-mode-active .delete-btn {
@@ -200,57 +233,63 @@
 
     #editor {
       background: rgba(255, 255, 255, 0.15);
-      padding: 20px;
-      margin: 20px auto;
+      backdrop-filter: blur(12px);
+      padding: 30px;
+      margin: 30px auto;
       width: 90%;
-      max-width: 400px;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(255,255,255,0.3);
+      max-width: 450px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     #editor input, #editor button {
       margin-top: 10px;
-      padding: 10px;
-      width: 80%;
+      padding: 12px;
+      width: 90%;
       border-radius: 8px;
       border: none;
       font-size: 1em;
+      box-sizing: border-box;
     }
-    #addPhoto {
+    #editor input[type="text"], #editor input[type="date"] {
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+    #addPhoto, #changeBgBtn {
       background: #ff5c8d;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
       color: #fff;
       font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255, 92, 141, 0.3);
     }
-    #addPhoto:hover { background: #e64c7c; }
+    #addPhoto:hover, #changeBgBtn:hover { background: #e64c7c; }
 
     footer {
-      margin-top: 40px;
+      margin-top: 50px;
+      margin-bottom: 30px;
       font-size: 0.9em;
       opacity: 0.8;
     }
     .hidden { display: none; }
 
+    /* ---- Animações ---- */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    /* ---- CSS MODIFICADO: Animação de Entrada das Fotos ---- */
     @keyframes fadeInScale {
       from { opacity: 0; transform: scale(0.9) translateY(20px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
+    /* ---- Lightbox ---- */
     #lightbox {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -259,103 +298,85 @@
       pointer-events: none;
       transition: opacity 0.3s ease;
     }
-
     #lightbox.visible {
       opacity: 1;
       pointer-events: all;
     }
-
     .lightbox-content {
       position: relative;
-      background: #fff;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      background: transparent;
+      padding: 0;
       max-width: 90%;
       max-height: 90%;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-
     #lightbox-img {
       max-width: 100%;
       max-height: 80vh; 
       display: block;
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
     }
-
     #lightbox-caption {
       margin-top: 15px;
-      font-size: 1.1em;
-      color: #333;
+      font-size: 1.2em;
+      color: #fff;
       text-align: center;
       max-width: 100%;
       word-wrap: break-word; 
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
     }
-
     .close-lightbox {
       position: absolute;
-      top: 10px;
-      right: 20px;
-      color: #555;
-      font-size: 30px;
+      top: -40px;
+      right: 0;
+      color: #fff;
+      font-size: 40px;
       font-weight: bold;
       cursor: pointer;
       z-index: 1001;
+      text-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
+    .close-lightbox:hover { color: #ff3b3b; }
 
-    .close-lightbox:hover {
-      color: #ff3b3b;
-    }
-
+    /* ---- Responsividade ---- */
     @media (max-width: 600px) {
-      #gallery {
-        grid-template-columns: repeat(1, 1fr); 
-      }
-      .photo {
-        aspect-ratio: auto; 
-      }
+      #gallery { grid-template-columns: repeat(1, 1fr); }
+      h1 { font-size: 2.2em; }
     }
 
+    /* ---- Icones e Botoes Paginação ---- */
     .caption .music-link-icon {
       text-decoration: none;
-      font-size: 1.1em;
-      margin-left: 5px;
+      font-size: 1.2em;
+      margin-left: 8px;
       cursor: pointer; 
     }
-
-    .caption .music-link-icon:hover {
-      opacity: 0.7;
-    }
-
+    .caption .music-link-icon:hover { opacity: 0.7; }
     .lightbox-music-link {
-      display: block;
+      display: inline-block;
       margin-top: 10px;
-      padding: 8px 12px;
-      background-color: #f0f0f0;
+      padding: 10px 20px;
+      background-color: #ff5c8d;
       border-radius: 8px;
-      color: #8e1e5c;
+      color: #fff;
       font-weight: bold;
       text-decoration: none;
       transition: background-color 0.3s;
     }
-
-    .lightbox-music-link:hover {
-      background-color: #e0e0e0;
-      text-decoration: none;
-    }
+    .lightbox-music-link:hover { background-color: #e64c7c; }
 
     #pagination-controls {
-      margin: 20px 0;
+      margin: 30px 0;
       text-align: center;
     }
     .page-btn, .nav-btn {
       background: #ff5c8d;
       border: none;
-      padding: 8px 14px;
+      padding: 10px 16px;
       border-radius: 8px;
       color: #fff;
       font-weight: bold;
@@ -363,67 +384,51 @@
       cursor: pointer;
       transition: background 0.3s;
       margin: 0 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .page-btn:hover, .nav-btn:hover {
-      background: #e64c7c;
-    }
-    .page-btn.active {
-      background: #b33c6a;
-      cursor: default;
-    }
-    .nav-btn:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-    }
+    .page-btn:hover, .nav-btn:hover { background: #e64c7c; }
+    .page-btn.active { background: #b33c6a; cursor: default; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+    .nav-btn:disabled { background: #aaa; cursor: not-allowed; box-shadow: none; }
 
     .lightbox-nav {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.3);
-      border: none;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.2);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 1.5em;
+      width: 50px;
+      height: 50px;
+      font-size: 1.8em;
       color: white;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s;
       z-index: 1002;
     }
-    .lightbox-nav:hover {
-      background: rgba(255, 255, 255, 0.6);
-    }
-    .lightbox-nav:disabled {
-      background: rgba(255, 255, 255, 0.1);
-      color: #999;
-      cursor: not-allowed;
-    }
-    #lightbox-prev {
-      left: 30px;
-    }
-    #lightbox-next {
-      right: 30px;
+    .lightbox-nav:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-50%) scale(1.1); }
+    .lightbox-nav:disabled { background: rgba(255, 255, 255, 0.05); color: #666; cursor: not-allowed; transform: translateY(-50%); }
+    #lightbox-prev { left: -60px; }
+    #lightbox-next { right: -60px; }
+    
+    @media (max-width: 800px) {
+      #lightbox-prev { left: 10px; }
+      #lightbox-next { right: 10px; }
     }
 
     #spotify-player {
       position: fixed;
-      bottom: 15px;
-      right: 15px;
+      bottom: 20px;
+      right: 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
       z-index: 999;
     }
-    #spotify-status {
-      margin-top: 10px;
-      font-size: 0.95rem;
-      color: #444;
-    }
-    /* ---- Fim do CSS ---- */
   </style>
 </head>
 <body>
   
+  <!-- Tela Inicial -->
   <div id="intro-screen">
     <div class="heart"></div>
     <h1>Bem-vindo(a) ao Nosso Cantinho 💖</h1>
@@ -435,74 +440,89 @@
     </div>
   </div>
 
+  <!-- Modal de Login Customizado -->
+  <div id="login-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2500; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 350px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+      <button id="closeLoginBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
+      <h3 style="margin-top: 0; font-family: 'Dancing Script', cursive; font-size: 2.2em; color: white;">Acesso Restrito 🔐</h3>
+      
+      <input type="password" id="senhaInput" placeholder="Digite a chave mestra" style="width: 100%; padding: 15px; margin: 20px 0; border-radius: 10px; border: none; box-sizing: border-box; text-align: center; font-size: 1.1em;">
+      
+      <button id="confirmLoginBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);">Acessar Painel</button>
+      
+      <button id="forgotPasswordBtn" style="background: transparent; color: #ffbcda; border: none; cursor: pointer; text-decoration: underline; font-size: 0.9em;">Esqueci a senha</button>
+    </div>
+  </div>
+
+  <!-- Conteúdo Principal -->
   <div id="main-content" class="hidden">
     <header>
       <h1>Nosso Cantinho 💕</h1>
       <button id="editBtn">Modo Edição</button>
     </header>
 
-    <main id="gallery">
-      <div class="navigation-buttons">
-        <button id="prevBtn">←</button>
-        <button id="nextBtn">→</button>
-      </div>
-    </main>
+    <main id="gallery"></main>
 
     <div id="pagination-controls"></div>
+
+    <div id="editor" class="hidden">
+      <h2 style="color: white; margin-top: 0;">✨ Adicionar Lembrança</h2>
+      <input type="file" id="imageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
+      <input type="text" id="captionInput" placeholder="Legenda ou história da foto">
+      <input type="text" id="musicLinkInput" placeholder="Link do Spotify (opcional)">
+      
+      <!-- Campo da Cápsula do Tempo -->
+      <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação (Cápsula do tempo) ⏳:</p>
+      <input type="date" id="unlockDateInput" title="Deixe vazio para mostrar na hora">
+      
+      <button id="addPhoto" style="margin-top: 20px; padding: 15px;">Guardar Momento</button>
+
+      <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
+      <h2 style="color: white;">🎨 Estilo da Página</h2>
+      <input type="file" id="bgImageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
+      <button id="changeBgBtn">Salvar Novo Fundo</button>
+      <button id="removeBgBtn" style="background-color: #ff3b3b; color: white; margin-top: 10px; font-weight: bold;">Remover Fundo Atual</button>
+    </div>
 
     <footer>
       <p>Feito com 💗. Sou inteiramente sua.</p>
     </footer>
-
-    <div id="editor" class="hidden">
-      <h2>Adicionar nova lembrança</h2>
-      <input type="file" id="imageInput" accept="image/*">
-      <input type="text" id="captionInput" placeholder="Legenda da foto">
-      <input type="text" id="musicLinkInput" placeholder="Link da música (opcional)">
-      <button id="addPhoto">Adicionar</button>
-
-      <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
-      <h2>Alterar Fundo da Página</h2>
-      <input type="file" id="bgImageInput" accept="image/*">
-      <button id="changeBgBtn">Salvar Fundo</button>
-      <button id="removeBgBtn" style="background-color: #ff3b3b; margin-top: 5px;">Remover Fundo</button>
-    </div>
   </div>
 
-  <!-- HTML MODIFICADO: Sistema de Notificação Toast -->
-  <div id="toast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 30px; background: #fff; color: #8e1e5c; border-radius: 50px; font-weight: bold; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></div>
+  <!-- Notificação Toast -->
+  <div id="toast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 35px; background: #fff; color: #8e1e5c; border-radius: 50px; font-weight: bold; font-size: 1.1em; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.4);"></div>
 
+  <!-- Player Spotify -->
   <iframe 
     data-testid="embed-iframe" 
     id="spotify-player"
-    style="border-radius:12px" 
     data-src="https://open.spotify.com/embed/track/21nV7Brjy93nQPM98QwIfr?utm_source=generator"
     src=""
     width="250" 
-    height="50" 
+    height="80" 
     frameBorder="0" 
-    allowfullscreen="" 
     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
     loading="lazy">
   </iframe>
 
+  <!-- Lightbox (Foto Ampliada) -->
   <div id="lightbox" class="hidden">
     <div class="lightbox-content">
       <span class="close-lightbox">×</span>
-      
-      <button id="lightbox-prev" class="lightbox-nav">←</button>
+      <button id="lightbox-prev" class="lightbox-nav">&#10094;</button>
       <img id="lightbox-img" src="" alt="Foto Ampliada">
-      <button id="lightbox-next" class="lightbox-nav">→</button>
-      
+      <button id="lightbox-next" class="lightbox-nav">&#10095;</button>
       <div id="lightbox-caption"></div>
     </div>
   </div>
 
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
   <script>
+    // ---- Configuração Firebase ----
     const firebaseConfig = {
       apiKey: "AIzaSyBnx2V3kPc9U94qJoEsV-eIaoAChR7ety0",
       authDomain: "inteiramene-sua.firebaseapp.com",
@@ -515,74 +535,47 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-
     const db = firebase.firestore();
-    const storage = firebase.storage();
     const photosCollection = db.collection("photos");
     const settingsDoc = db.collection("settings").doc("appSettings");
-  </script>
 
-  <script>
-    // ---- Início do JavaScript ----
-    const gallery = document.getElementById('gallery');
-    const editor = document.getElementById('editor');
-    const editBtn = document.getElementById('editBtn');
-    const addPhotoBtn = document.getElementById('addPhoto');
-    const introScreen = document.getElementById('intro-screen');
-    const enterBtn = document.getElementById('enterBtn');
-    const mainContent = document.getElementById('main-content');
-    const spotifyPlayer = document.getElementById('spotify-player');
+    // ---- Cloudinary Config ----
+    const CLOUD_NAME = "doplrv465";
+    const UPLOAD_PRESET = "meudengo";
 
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxCaption = document.getElementById('lightbox-caption');
-    const closeLightboxBtn = document.querySelector('.close-lightbox');
-
-    const musicLinkInput = document.getElementById('musicLinkInput');
-
-    const bgImageInput = document.getElementById('bgImageInput');
-    const changeBgBtn = document.getElementById('changeBgBtn');
-    const removeBgBtn = document.getElementById('removeBgBtn');
-
-    const paginationControls = document.getElementById('pagination-controls');
-
-    const lightboxPrevBtn = document.getElementById('lightbox-prev');
-    const lightboxNextBtn = document.getElementById('lightbox-next');
-
+    // ---- Variáveis de Estado ----
     let photos = [];
     let currentPage = 1;
     const photosPerPage = 4;
     let currentLightboxIndex = 0; 
-
-    // CHAVES ATUALIZADAS DO CLOUDINARY
-    const CLOUD_NAME = "doplrv465";
-    const UPLOAD_PRESET = "meudengo";
-
     const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
     const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
 
-    // JS MODIFICADO: Função do Toast
+    // ---- Seletores DOM ----
+    const gallery = document.getElementById('gallery');
+    const editor = document.getElementById('editor');
+    const introScreen = document.getElementById('intro-screen');
+    const mainContent = document.getElementById('main-content');
+    const spotifyPlayer = document.getElementById('spotify-player');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const paginationControls = document.getElementById('pagination-controls');
+
+    // ---- Função Toast (Notificações) ----
     function showToast(message) {
       const toast = document.getElementById('toast');
       toast.innerText = message;
       toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, 3000);
+      setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
+    // ---- Lógica de Fundo da Página ----
     function applyBackground(imageUrl) {
       const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
-
       document.body.style.background = bgValue;
       introScreen.style.background = bgValue;
-      
-      const styles = {
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      };
-      
+      const styles = { backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' };
       Object.assign(document.body.style, styles);
       Object.assign(introScreen.style, styles);
     }
@@ -590,49 +583,31 @@
     async function loadSettings() {
       try {
         const doc = await settingsDoc.get();
-        if (doc.exists && doc.data().backgroundImageUrl) {
-          applyBackground(doc.data().backgroundImageUrl);
-        } else {
-          removeBackground(); 
-        }
+        if (doc.exists && doc.data().backgroundImageUrl) applyBackground(doc.data().backgroundImageUrl);
+        else removeBackground(); 
       } catch (error) {
-        console.error("Erro ao carregar configurações:", error);
-        removeBackground();
+        console.error("Erro configurações:", error);
       }
     }
 
     async function removeBackground() {
       applyBackground(null);
-      
       try {
         await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
         showToast("Fundo removido com sucesso!");
       } catch (error) {
-        console.error("Erro ao remover fundo:", error);
-        showToast("Erro ao remover fundo do Firebase.");
+        showToast("Erro ao remover fundo do sistema.");
       }
     }
 
+    // ---- Carregamento de Fotos e Renderização ----
     async function loadPhotos() {
       try {
         const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
-        
         photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
         renderGalleryAndPagination(); 
       } catch (error) {
-        console.error("Erro ao carregar fotos:", error);
         showToast("Erro ao carregar fotos da nuvem.");
-      }
-    }
-
-    async function deletePhoto(photoId) {
-      try {
-        await photosCollection.doc(photoId).delete();
-        await loadPhotos(); 
-      } catch (error) {
-        console.error("Erro ao deletar foto:", error);
-        showToast("Erro ao deletar foto da nuvem.");
       }
     }
 
@@ -641,35 +616,37 @@
       paginationControls.innerHTML = '';
 
       const totalPages = Math.ceil(photos.length / photosPerPage);
-
-      if (currentPage > totalPages) {
-        currentPage = totalPages;
-      }
-      if (currentPage < 1) {
-        currentPage = 1;
-      }
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
 
       const startIndex = (currentPage - 1) * photosPerPage;
-      const endIndex = startIndex + photosPerPage;
-      const photosToShow = photos.slice(startIndex, endIndex);
+      const photosToShow = photos.slice(startIndex, startIndex + photosPerPage);
 
-      // JS MODIFICADO: Adicionado 'index' para o delay dinâmico
       photosToShow.forEach((photo, index) => {
         const originalIndex = photos.findIndex(p => p.id === photo.id);
         const div = document.createElement('div');
-        div.className = 'photo';
         
-        // Aplica o atraso na animação baseado na posição da foto
+        // Lógica da Cápsula do Tempo
+        const hoje = new Date().toISOString().split('T')[0];
+        const isLocked = photo.unlockDate && photo.unlockDate > hoje;
+        
+        div.className = `photo ${isLocked ? 'locked' : ''}`;
         div.style.animationDelay = `${index * 0.15}s`;
 
-        const musicIconHTML = photo.musicLink 
-          ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` 
-          : '';
+        const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
+        const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
+        
+        let textoLegenda = photo.caption;
+        if (isLocked) {
+          const dataBr = photo.unlockDate.split('-').reverse().join('/');
+          textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
+        }
 
         div.innerHTML = `
           <button class="delete-btn" data-id="${photo.id}">×</button>
-          <img src="${photo.url}" alt="${photo.caption}" data-id="${photo.id}" data-index-in-page="${originalIndex}">
-          <div class="caption">${photo.caption} ${musicIconHTML}</div>`;
+          ${lockIconHTML}
+          <img src="${photo.url}" alt="Lembrança" data-id="${photo.id}" data-index-in-page="${originalIndex}">
+          <div class="caption">${textoLegenda} ${musicIconHTML}</div>`;
         
         gallery.appendChild(div);
       });
@@ -678,315 +655,249 @@
       setupLightboxListeners();
     }
 
-    function showLightboxPhoto(index) {
-      currentLightboxIndex = index;
-      const photo = photos[index];
-
-      if (!photo) return;
-
-      lightboxImg.src = photo.url;
-      lightboxCaption.innerHTML = `<div>${photo.caption}</div>`; 
-
-      if (photo.musicLink) {
-        lightboxCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
-      }
-      
-      lightboxPrevBtn.disabled = (index === 0);
-      lightboxNextBtn.disabled = (index === photos.length - 1);
-    }
-
-    function setupLightboxListeners() {
-      document.querySelectorAll('.photo img').forEach(img => {
-        img.addEventListener('click', (e) => {
-          e.stopPropagation(); 
-          
-          const photoId = e.target.getAttribute('data-id');
-          const originalIndex = photos.findIndex(p => p.id === photoId);
-          
-          showLightboxPhoto(originalIndex);
-          
-          lightbox.classList.add('visible');
-        });
-      });
-
-      document.querySelectorAll('.music-link-icon').forEach(icon => {
-        icon.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-      });
-    }
-
+    // ---- Paginação ----
     function setupPagination(totalPages) {
       if (totalPages <= 1) return;
 
       const prevBtn = document.createElement('button');
-      prevBtn.textContent = '←';
+      prevBtn.innerHTML = '&#10094;';
       prevBtn.className = 'nav-btn';
       prevBtn.disabled = currentPage === 1;
-      prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderGalleryAndPagination();
-        }
-      });
+      prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderGalleryAndPagination(); window.scrollTo(0,0); } };
       paginationControls.appendChild(prevBtn);
 
       for (let i = 1; i <= totalPages; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.textContent = i;
         pageBtn.className = 'page-btn';
-        if (i === currentPage) {
-          pageBtn.classList.add('active');
-        }
-        pageBtn.addEventListener('click', () => {
-          currentPage = i;
-          renderGalleryAndPagination();
-        });
+        if (i === currentPage) pageBtn.classList.add('active');
+        pageBtn.onclick = () => { currentPage = i; renderGalleryAndPagination(); window.scrollTo(0,0); };
         paginationControls.appendChild(pageBtn);
       }
 
       const nextBtn = document.createElement('button');
-      nextBtn.textContent = '→';
+      nextBtn.innerHTML = '&#10095;';
       nextBtn.className = 'nav-btn';
       nextBtn.disabled = currentPage === totalPages;
-      nextBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderGalleryAndPagination();
-        }
-      });
+      nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderGalleryAndPagination(); window.scrollTo(0,0); } };
       paginationControls.appendChild(nextBtn);
     }
 
-    function changePage(newPage) {
-      currentPage = newPage;
-      renderGalleryAndPagination();
+    // ---- Lightbox (Foto Ampliada) ----
+    function showLightboxPhoto(index) {
+      currentLightboxIndex = index;
+      const photo = photos[index];
+      if (!photo) return;
+
+      document.getElementById('lightbox-img').src = photo.url;
+      lightboxCaption.innerHTML = `<div>${photo.caption}</div>`; 
+      if (photo.musicLink) lightboxCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
+      
+      document.getElementById('lightbox-prev').disabled = (index === 0);
+      document.getElementById('lightbox-next').disabled = (index === photos.length - 1);
     }
 
-    enterBtn.addEventListener('click', () => {
+    function setupLightboxListeners() {
+      document.querySelectorAll('.photo img').forEach(img => {
+        img.addEventListener('click', (e) => {
+          e.stopPropagation(); 
+          if (e.target.parentElement.classList.contains('locked')) {
+            showToast("Essa lembrança ainda está trancada pelo tempo! ⏳");
+            return; 
+          }
+          const photoId = e.target.getAttribute('data-id');
+          const originalIndex = photos.findIndex(p => p.id === photoId);
+          showLightboxPhoto(originalIndex);
+          lightbox.classList.add('visible');
+        });
+      });
+      document.querySelectorAll('.music-link-icon').forEach(icon => {
+        icon.addEventListener('click', (e) => e.stopPropagation());
+      });
+    }
+
+    document.querySelector('.close-lightbox').onclick = () => lightbox.classList.remove('visible');
+    lightbox.onclick = (e) => { if (e.target.id === 'lightbox') lightbox.classList.remove('visible'); };
+    
+    document.getElementById('lightbox-prev').onclick = (e) => {
+      e.stopPropagation();
+      if (currentLightboxIndex > 0) showLightboxPhoto(currentLightboxIndex - 1);
+    };
+    document.getElementById('lightbox-next').onclick = (e) => {
+      e.stopPropagation();
+      if (currentLightboxIndex < photos.length - 1) showLightboxPhoto(currentLightboxIndex + 1);
+    };
+
+    // ---- Interações Iniciais e Login Customizado ----
+    document.getElementById('enterBtn').onclick = () => {
       introScreen.classList.add('fade-out');
-      
       setTimeout(() => {
         introScreen.style.display = 'none';
         mainContent.classList.remove('hidden');
-        
-        const spotifySrc = spotifyPlayer.getAttribute('data-src');
-        spotifyPlayer.setAttribute('src', spotifySrc);
-        
+        spotifyPlayer.setAttribute('src', spotifyPlayer.getAttribute('data-src'));
         loadPhotos(); 
       }, 1000);
-    });
+    };
 
-    editBtn.addEventListener('click', () => {
-      const senha = prompt("Digite a senha para editar:");
-      if (senha === "meuamorzinho") {
+    const loginModal = document.getElementById('login-modal');
+    const senhaInput = document.getElementById('senhaInput');
+
+    document.getElementById('editBtn').onclick = () => {
+      loginModal.style.display = 'flex';
+      senhaInput.value = ''; 
+      senhaInput.focus();
+    };
+
+    document.getElementById('closeLoginBtn').onclick = () => loginModal.style.display = 'none';
+
+    document.getElementById('confirmLoginBtn').onclick = () => {
+      if (senhaInput.value === "meuamorzinho") {
         editor.classList.toggle('hidden');
         mainContent.classList.toggle('edit-mode-active');
+        loginModal.style.display = 'none';
+        showToast("Modo de edição liberado! ✨");
       } else {
         showToast("Senha incorreta 💔");
       }
-    });
+    };
 
-    addPhotoBtn.addEventListener('click', () => {
+    document.getElementById('forgotPasswordBtn').onclick = () => {
+      showToast("Dica: É como eu te chamo carinhosamente (tudo junto e minúsculo) 💕");
+    };
+
+    // ---- Upload de Fotos e Cápsula do Tempo ----
+    document.getElementById('addPhoto').onclick = () => {
       const fileInput = document.getElementById('imageInput');
       const captionInput = document.getElementById('captionInput');
+      const musicLinkInput = document.getElementById('musicLinkInput');
+      const unlockDateInput = document.getElementById('unlockDateInput');
+
       const file = fileInput.files[0];
       const caption = captionInput.value;
       const musicLink = musicLinkInput.value;
+      const unlockDate = unlockDateInput.value;
 
-      if (!file) {
-        showToast("Selecione uma imagem 💞");
-        return;
-      }
-      if (!caption) {
-        showToast("Adicione uma legenda! 💞");
-        return;
-      }
+      if (!file) return showToast("Selecione uma imagem 💞");
+      if (!caption) return showToast("Adicione uma legenda! 💞");
 
-      addPhotoBtn.disabled = true;
-      addPhotoBtn.textContent = 'Enviando...';
+      const btn = document.getElementById('addPhoto');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
 
       const reader = new FileReader();
-      reader.onload = e => {
-        resizeAndUpload(e.target.result, file.type, caption, musicLink, addPhotoBtn);
-      };
+      reader.onload = e => resizeAndUpload(e.target.result, file.type, caption, musicLink, unlockDate, btn);
       reader.readAsDataURL(file);
-    });
+    };
 
     async function uploadToCloudinary(base64Image) {
-      const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-      
       const formData = new FormData();
       formData.append('file', base64Image);
       formData.append('upload_preset', UPLOAD_PRESET);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (data.secure_url) {
-        return data.secure_url;
-      } else {
-        throw new Error('Cloudinary upload failed: ' + (data.error ? data.error.message : 'Unknown error'));
-      }
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.secure_url) return data.secure_url;
+      throw new Error('Upload failed');
     }
 
-    function resizeAndUpload(dataURL, mimeType, caption, musicLink, button) {
-      const MAX_WIDTH = 1920;
-      const MAX_HEIGHT = 1080;
-      
+    function resizeAndUpload(dataURL, mimeType, caption, musicLink, unlockDate, button) {
+      const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
       const img = new Image();
       img.src = dataURL;
       
       img.onload = async () => {
         try {
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > MAX_WIDTH) {
-                height = height * (MAX_WIDTH / width);
-                width = MAX_WIDTH;
-              }
-            } else {
-              if (height > MAX_HEIGHT) {
-                width = width * (MAX_HEIGHT / height);
-                height = MAX_HEIGHT;
-              }
-            }
+            let w = img.width, h = img.height;
+            if (w > h && w > MAX_WIDTH) { h *= MAX_WIDTH / w; w = MAX_WIDTH; } 
+            else if (h > MAX_HEIGHT) { w *= MAX_HEIGHT / h; h = MAX_HEIGHT; }
             
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
             
-            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-            
-            const downloadURL = await uploadToCloudinary(resizedBase64);
+            const url = await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.8));
 
             await photosCollection.add({
-                url: downloadURL,
+                url: url,
                 caption: caption,
                 musicLink: musicLink,
+                unlockDate: unlockDate || null,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            showToast("Foto adicionada com sucesso! 💖");
-            
+            showToast("Memória guardada com sucesso! 💖");
             document.getElementById('imageInput').value = '';
             document.getElementById('captionInput').value = '';
-            musicLinkInput.value = '';
+            document.getElementById('musicLinkInput').value = '';
+            document.getElementById('unlockDateInput').value = '';
             
             currentPage = 1;
             await loadPhotos();
-        } catch (error) {
-            console.error("Erro ao subir a foto:", error);
+        } catch (e) {
             showToast("Erro ao enviar a foto para a nuvem.");
         } finally {
             button.disabled = false;
-            button.textContent = 'Adicionar';
+            button.textContent = 'Guardar Momento';
         }
       };
     }
 
-    gallery.addEventListener('click', (e) => {
+    // ---- Apagar Fotos ----
+    gallery.addEventListener('click', async (e) => {
       if (e.target.classList.contains('delete-btn')) {
-        if (!confirm("Tem certeza que quer apagar esta foto? Esta ação não pode ser desfeita.")) {
-          return;
+        if (confirm("Tem certeza que quer apagar esta lembrança para sempre?")) {
+          try {
+            await photosCollection.doc(e.target.getAttribute('data-id')).delete();
+            showToast("Lembrança apagada.");
+            await loadPhotos(); 
+          } catch (err) {
+            showToast("Erro ao deletar foto.");
+          }
         }
-        const photoId = e.target.getAttribute('data-id');
-        deletePhoto(photoId);
       }
     });
 
-    lightboxPrevBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (currentLightboxIndex > 0) {
-        showLightboxPhoto(currentLightboxIndex - 1);
-      }
-    });
+    // ---- Background Management ----
+    document.getElementById('changeBgBtn').onclick = async () => {
+      const file = document.getElementById('bgImageInput').files[0];
+      if (!file) return showToast("Selecione uma imagem de fundo.");
 
-    lightboxNextBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (currentLightboxIndex < photos.length - 1) {
-        showLightboxPhoto(currentLightboxIndex + 1);
-      }
-    });
-
-    closeLightboxBtn.addEventListener('click', () => {
-      lightbox.classList.remove('visible');
-    });
-
-    lightbox.addEventListener('click', (e) => {
-      if (e.target.id === 'lightbox') {
-        lightbox.classList.remove('visible');
-      }
-    });
-
-    changeBgBtn.addEventListener('click', async () => {
-      const file = bgImageInput.files[0];
-      if (!file) {
-        showToast("Selecione uma imagem de fundo.");
-        return;
-      }
-
-      changeBgBtn.disabled = true;
-      changeBgBtn.textContent = 'Enviando...';
+      const btn = document.getElementById('changeBgBtn');
+      btn.disabled = true; btn.textContent = 'Aplicando Fundo...';
 
       const reader = new FileReader();
       reader.onload = async e => {
         try {
-            const MAX_BG_WIDTH = 1920;
             const resizedUrl = await new Promise(resolve => {
                 const img = new Image();
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > MAX_BG_WIDTH) {
-                        height = height * (MAX_BG_WIDTH / width);
-                        width = MAX_BG_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    
-                    const base64Image = canvas.toDataURL('image/jpeg', 0.6);
-                    const downloadURL = await uploadToCloudinary(base64Image);
-                    resolve(downloadURL);
+                    let w = img.width, h = img.height;
+                    if (w > 1920) { h *= 1920 / w; w = 1920; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.6)));
                 };
                 img.src = e.target.result;
             });
 
             await settingsDoc.set({ backgroundImageUrl: resizedUrl }, { merge: true });
-            
             applyBackground(resizedUrl);
             showToast("Fundo alterado com sucesso! ✨");
-            bgImageInput.value = '';
-        } catch (error) {
-            console.error("Erro ao alterar fundo:", error);
+            document.getElementById('bgImageInput').value = '';
+        } catch (err) {
             showToast("Erro ao alterar fundo.");
         } finally {
-            changeBgBtn.disabled = false;
-            changeBgBtn.textContent = 'Salvar Fundo';
+            btn.disabled = false; btn.textContent = 'Salvar Novo Fundo';
         }
       };
       reader.readAsDataURL(file);
-    });
+    };
 
-    removeBgBtn.addEventListener('click', () => {
-      if (confirm("Tem certeza que quer remover o fundo personalizado?")) {
-        removeBackground();
-      }
-    });
+    document.getElementById('removeBgBtn').onclick = () => {
+      if (confirm("Quer remover o fundo personalizado?")) removeBackground();
+    };
 
-    document.addEventListener('DOMContentLoaded', () => {
-       loadSettings(); 
-    });
-    // ---- Fim do JavaScript ----
+    document.addEventListener('DOMContentLoaded', loadSettings);
   </script>
 </body>
 </html>
