@@ -123,6 +123,46 @@
     }
     #editBtn:hover { background: #e64c7c; transform: translateY(-2px); }
 
+    /* ---- NOVO: Controles da Linha do Tempo ---- */
+    #gallery-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 25px auto 5px auto;
+      flex-wrap: wrap;
+      width: 90%;
+      max-width: 900px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s;
+      font-family: "Quicksand", sans-serif;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .control-btn.active {
+      background: #ff5c8d;
+      border-color: #ff5c8d;
+      box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);
+    }
+
+    .control-divider {
+      width: 1px;
+      background: rgba(255,255,255,0.3);
+      margin: 0 5px;
+    }
+
     /* ---- Galeria e Efeito Glassmorphism ---- */
     #gallery {
       display: grid;
@@ -130,7 +170,7 @@
       gap: 20px; 
       width: 90%; 
       max-width: 900px; 
-      margin: 30px auto; 
+      margin: 20px auto 30px auto; 
       padding: 10px;
       box-sizing: border-box;
       min-height: 50vh;
@@ -192,7 +232,7 @@
       gap: 8px;
     }
 
-    /* ---- NOVO: Sistema de Likes ---- */
+    /* ---- Sistema de Likes ---- */
     .like-container {
       display: inline-flex;
       align-items: center;
@@ -260,8 +300,6 @@
     }
 
     /* ---- Botoes de Controle da Foto (Apagar e Editar) ---- */
-    .navigation-buttons { display: none; }
-
     .delete-btn {
       position: absolute;
       top: 10px;
@@ -442,6 +480,7 @@
     @media (max-width: 600px) {
       #gallery { grid-template-columns: repeat(1, 1fr); }
       h1 { font-size: 2.2em; }
+      #gallery-controls { flex-direction: row; font-size: 0.85em; }
     }
 
     /* ---- Icones e Botoes Paginação ---- */
@@ -540,11 +579,8 @@
     <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 350px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
       <button id="closeLoginBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
       <h3 style="margin-top: 0; font-family: 'Dancing Script', cursive; font-size: 2.2em; color: white;">Acesso Restrito 🔐</h3>
-      
       <input type="password" id="senhaInput" placeholder="Digite a chave mestra" style="width: 100%; padding: 15px; margin: 20px 0; border-radius: 10px; border: none; box-sizing: border-box; text-align: center; font-size: 1.1em;">
-      
       <button id="confirmLoginBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);">Acessar Painel</button>
-      
       <button id="forgotPasswordBtn" style="background: transparent; color: #ffbcda; border: none; cursor: pointer; text-decoration: underline; font-size: 0.9em;">Esqueci a senha</button>
     </div>
   </div>
@@ -554,16 +590,11 @@
     <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 450px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
       <button id="closeEditModalBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
       <h3 style="margin-top: 0; color: white;">✏️ Editar Lembrança</h3>
-      
       <input type="hidden" id="editPhotoId">
-      
       <input type="text" id="editCaptionInput" placeholder="Nova legenda" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      
       <input type="text" id="editMusicLinkInput" placeholder="Novo link do Spotify" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      
       <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; color: white; font-weight: bold;">Data de revelação ⏳:</p>
       <input type="date" id="editUnlockDateInput" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      
       <button id="saveEditBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);">Salvar Alterações</button>
     </div>
   </div>
@@ -575,6 +606,16 @@
       <button id="editBtn">Modo Edição</button>
     </header>
 
+    <!-- NOVO: Controles da Linha do Tempo e Filtros -->
+    <div id="gallery-controls">
+      <button class="control-btn active" data-sort="desc" id="sort-desc-btn">Mais Recentes</button>
+      <button class="control-btn" data-sort="asc" id="sort-asc-btn">Mais Antigas</button>
+      <div class="control-divider"></div>
+      <button class="control-btn active" data-filter="all" id="filter-all-btn">Todas</button>
+      <button class="control-btn" data-filter="unlocked" id="filter-unlocked-btn">Reveladas</button>
+      <button class="control-btn" data-filter="locked" id="filter-locked-btn">Cápsulas ⏳</button>
+    </div>
+
     <main id="gallery"></main>
 
     <div id="pagination-controls"></div>
@@ -584,10 +625,8 @@
       <input type="file" id="imageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
       <input type="text" id="captionInput" placeholder="Legenda ou história da foto">
       <input type="text" id="musicLinkInput" placeholder="Link do Spotify (opcional)">
-      
       <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação (Cápsula do tempo) ⏳:</p>
       <input type="date" id="unlockDateInput" title="Deixe vazio para mostrar na hora">
-      
       <button id="addPhoto" style="margin-top: 20px; padding: 15px;">Guardar Momento</button>
 
       <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
@@ -632,19 +671,16 @@
   <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
   <script>
     // ---- Configuração Firebase ----
     const firebaseConfig = {
       apiKey: "AIzaSyBnx2V3kPc9U94qJoEsV-eIaoAChR7ety0",
       authDomain: "inteiramene-sua.firebaseapp.com",
-      databaseURL: "https://inteiramene-sua-default-rtdb.firebaseio.com",
       projectId: "inteiramene-sua",
       storageBucket: "inteiramene-sua.firebasestorage.app",
       messagingSenderId: "801226819273",
-      appId: "1:801226819273:web:107cc21e7e687a1d7a2f18",
-      measurementId: "G-HTCHMNYKTF"
+      appId: "1:801226819273:web:107cc21e7e687a1d7a2f18"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -656,26 +692,29 @@
     const CLOUD_NAME = "doplrv465";
     const UPLOAD_PRESET = "meudengo";
 
-    // ---- Variáveis de Estado ----
+    // ---- Variáveis de Estado da Aplicação ----
     let photos = [];
+    let filteredPhotos = []; // NOVO: Array para guardar o resultado dos filtros
     let currentPage = 1;
     const photosPerPage = 4;
     let currentLightboxIndex = 0; 
+    
+    // NOVO: Estados de Filtro e Ordenação
+    let currentSortOrder = 'desc'; // desc = mais recentes, asc = mais antigas
+    let currentFilterType = 'all'; // all, unlocked, locked
+
     const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
     const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
 
     // ---- Seletores DOM ----
     const gallery = document.getElementById('gallery');
-    const editor = document.getElementById('editor');
+    const paginationControls = document.getElementById('pagination-controls');
     const introScreen = document.getElementById('intro-screen');
     const mainContent = document.getElementById('main-content');
+    const editor = document.getElementById('editor');
     const spotifyPlayer = document.getElementById('spotify-player');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxCaption = document.getElementById('lightbox-caption');
-    const paginationControls = document.getElementById('pagination-controls');
 
-    // ---- Função Toast (Notificações) ----
+    // ---- Função Toast ----
     function showToast(message) {
       const toast = document.getElementById('toast');
       toast.innerText = message;
@@ -683,21 +722,19 @@
       setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
-    // ---- Efeito Chuva de Corações JS ----
+    // ---- Efeito Chuva de Corações ----
     function createHeartShower() {
       const emojis = ['❤️', '💖', '💕', '✨', '😍'];
       for (let i = 0; i < 40; i++) {
         const heart = document.createElement('div');
         heart.className = 'floating-heart';
         heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-        
         heart.style.left = Math.random() * 100 + 'vw';
         heart.style.animationDuration = (Math.random() * 3 + 3) + 's'; 
         heart.style.animationDelay = Math.random() * 1.5 + 's'; 
         heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem'; 
-        
         document.body.appendChild(heart);
-        setTimeout(() => { heart.remove(); }, 7000); 
+        setTimeout(() => heart.remove(), 7000); 
       }
     }
 
@@ -716,9 +753,7 @@
         const doc = await settingsDoc.get();
         if (doc.exists && doc.data().backgroundImageUrl) applyBackground(doc.data().backgroundImageUrl);
         else removeBackground(); 
-      } catch (error) {
-        console.error("Erro configurações:", error);
-      }
+      } catch (error) { console.error("Erro configurações:", error); }
     }
 
     async function removeBackground() {
@@ -726,16 +761,38 @@
       try {
         await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
         showToast("Fundo removido com sucesso!");
-      } catch (error) {
-        showToast("Erro ao remover fundo.");
-      }
+      } catch (error) { showToast("Erro ao remover fundo."); }
+    }
+
+    // ---- NOVO: Lógica de Processamento (Filtro e Ordenação) ----
+    function processPhotos() {
+      const hoje = new Date().toISOString().split('T')[0];
+      
+      // 1. Filtrar
+      filteredPhotos = photos.filter(photo => {
+        const isLocked = photo.unlockDate && photo.unlockDate > hoje;
+        if (currentFilterType === 'unlocked') return !isLocked;
+        if (currentFilterType === 'locked') return isLocked;
+        return true; // 'all'
+      });
+
+      // 2. Ordenar
+      filteredPhotos.sort((a, b) => {
+        const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
+        const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
+        return currentSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+      });
     }
 
     // ---- Carregamento de Fotos e Renderização ----
     async function loadPhotos() {
       try {
+        // Baixa tudo do Firebase uma vez só
         const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
         photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Aplica filtros, ordem e renderiza
+        processPhotos();
         renderGalleryAndPagination(); 
       } catch (error) {
         showToast("Erro ao carregar fotos da nuvem.");
@@ -746,15 +803,20 @@
       gallery.innerHTML = '';
       paginationControls.innerHTML = '';
 
-      const totalPages = Math.ceil(photos.length / photosPerPage);
+      if (filteredPhotos.length === 0) {
+        gallery.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada para este filtro.</div>`;
+        return;
+      }
+
+      const totalPages = Math.ceil(filteredPhotos.length / photosPerPage);
       if (currentPage > totalPages) currentPage = totalPages;
       if (currentPage < 1) currentPage = 1;
 
       const startIndex = (currentPage - 1) * photosPerPage;
-      const photosToShow = photos.slice(startIndex, startIndex + photosPerPage);
+      const photosToShow = filteredPhotos.slice(startIndex, startIndex + photosPerPage);
 
       photosToShow.forEach((photo, index) => {
-        const originalIndex = photos.findIndex(p => p.id === photo.id);
+        const originalIndex = filteredPhotos.findIndex(p => p.id === photo.id);
         const div = document.createElement('div');
         
         const hoje = new Date().toISOString().split('T')[0];
@@ -766,7 +828,6 @@
         const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
         const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
         
-        // NOVO: Renderiza o Contador de Likes
         const likesCount = photo.likes || 0;
         const likeBtnHTML = `
           <div class="like-container" title="Curtir momento">
@@ -800,6 +861,30 @@
       setupLightboxListeners();
     }
 
+    // ---- Eventos dos Botões de Filtro e Ordenação ----
+    document.querySelectorAll('.control-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const sortVal = e.target.getAttribute('data-sort');
+        const filterVal = e.target.getAttribute('data-filter');
+
+        if (sortVal) {
+          currentSortOrder = sortVal;
+          document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+        }
+
+        if (filterVal) {
+          currentFilterType = filterVal;
+          document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+        }
+
+        currentPage = 1; // Reseta para a página 1 ao filtrar/ordenar
+        processPhotos();
+        renderGalleryAndPagination();
+      });
+    });
+
     // ---- Paginação ----
     function setupPagination(totalPages) {
       if (totalPages <= 1) return;
@@ -831,15 +916,16 @@
     // ---- Lightbox (Foto Ampliada) ----
     function showLightboxPhoto(index) {
       currentLightboxIndex = index;
-      const photo = photos[index];
+      const photo = filteredPhotos[index]; // Usa o array filtrado!
       if (!photo) return;
 
       document.getElementById('lightbox-img').src = photo.url;
-      lightboxCaption.innerHTML = `<div>${photo.caption}</div>`; 
-      if (photo.musicLink) lightboxCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
+      const lbCaption = document.getElementById('lightbox-caption');
+      lbCaption.innerHTML = `<div>${photo.caption}</div>`; 
+      if (photo.musicLink) lbCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
       
       document.getElementById('lightbox-prev').disabled = (index === 0);
-      document.getElementById('lightbox-next').disabled = (index === photos.length - 1);
+      document.getElementById('lightbox-next').disabled = (index === filteredPhotos.length - 1);
     }
 
     function setupLightboxListeners() {
@@ -850,17 +936,16 @@
             showToast("Essa lembrança ainda está trancada pelo tempo! ⏳");
             return; 
           }
-          const photoId = e.target.getAttribute('data-id');
-          const originalIndex = photos.findIndex(p => p.id === photoId);
-          showLightboxPhoto(originalIndex);
-          lightbox.classList.add('visible');
+          const index = parseInt(e.target.getAttribute('data-index-in-page'));
+          showLightboxPhoto(index);
+          document.getElementById('lightbox').classList.add('visible');
         });
       });
       document.querySelectorAll('.music-link-icon').forEach(icon => icon.addEventListener('click', (e) => e.stopPropagation()));
     }
 
-    document.querySelector('.close-lightbox').onclick = () => lightbox.classList.remove('visible');
-    lightbox.onclick = (e) => { if (e.target.id === 'lightbox') lightbox.classList.remove('visible'); };
+    document.querySelector('.close-lightbox').onclick = () => document.getElementById('lightbox').classList.remove('visible');
+    document.getElementById('lightbox').onclick = (e) => { if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('visible'); };
     
     document.getElementById('lightbox-prev').onclick = (e) => {
       e.stopPropagation();
@@ -868,14 +953,13 @@
     };
     document.getElementById('lightbox-next').onclick = (e) => {
       e.stopPropagation();
-      if (currentLightboxIndex < photos.length - 1) showLightboxPhoto(currentLightboxIndex + 1);
+      if (currentLightboxIndex < filteredPhotos.length - 1) showLightboxPhoto(currentLightboxIndex + 1);
     };
 
     // ---- Interações Iniciais e Login Customizado ----
     document.getElementById('enterBtn').onclick = () => {
       introScreen.classList.add('fade-out');
       createHeartShower(); 
-      
       setTimeout(() => {
         introScreen.style.display = 'none';
         mainContent.classList.remove('hidden');
@@ -901,14 +985,10 @@
         mainContent.classList.toggle('edit-mode-active');
         loginModal.style.display = 'none';
         showToast("Modo de edição liberado! ✨");
-      } else {
-        showToast("Senha incorreta 💔");
-      }
+      } else { showToast("Senha incorreta 💔"); }
     };
 
-    document.getElementById('forgotPasswordBtn').onclick = () => {
-      showToast("Dica: É como eu te chamo carinhosamente (tudo junto e minúsculo) 💕");
-    };
+    document.getElementById('forgotPasswordBtn').onclick = () => showToast("Dica: É como eu te chamo carinhosamente (tudo junto e minúsculo) 💕");
 
     // ---- Upload de Fotos ----
     document.getElementById('addPhoto').onclick = () => {
@@ -926,8 +1006,7 @@
       if (!caption) return showToast("Adicione uma legenda! 💞");
 
       const btn = document.getElementById('addPhoto');
-      btn.disabled = true;
-      btn.textContent = 'Enviando...';
+      btn.disabled = true; btn.textContent = 'Enviando...';
 
       const reader = new FileReader();
       reader.onload = e => resizeAndUpload(e.target.result, file.type, caption, musicLink, unlockDate, btn);
@@ -946,8 +1025,7 @@
 
     function resizeAndUpload(dataURL, mimeType, caption, musicLink, unlockDate, button) {
       const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
-      const img = new Image();
-      img.src = dataURL;
+      const img = new Image(); img.src = dataURL;
       
       img.onload = async () => {
         try {
@@ -961,7 +1039,6 @@
             
             const url = await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.8));
 
-            // NOVO: Adicionado likes: 0 na criação
             await photosCollection.add({
                 url: url,
                 caption: caption,
@@ -981,31 +1058,23 @@
             
             currentPage = 1;
             await loadPhotos();
-        } catch (e) {
-            showToast("Erro ao enviar a foto para a nuvem.");
-        } finally {
-            button.disabled = false;
-            button.textContent = 'Guardar Momento';
-        }
+        } catch (e) { showToast("Erro ao enviar a foto para a nuvem."); } 
+        finally { button.disabled = false; button.textContent = 'Guardar Momento'; }
       };
     }
 
     // ---- Controles da Galeria (Apagar, Editar e CURTIR) ----
     gallery.addEventListener('click', async (e) => {
-      // Deletar
       if (e.target.classList.contains('delete-btn')) {
         if (confirm("Tem certeza que quer apagar esta lembrança para sempre?")) {
           try {
             await photosCollection.doc(e.target.getAttribute('data-id')).delete();
             showToast("Lembrança apagada.");
             await loadPhotos(); 
-          } catch (err) {
-            showToast("Erro ao deletar foto.");
-          }
+          } catch (err) { showToast("Erro ao deletar foto."); }
         }
       }
       
-      // Abrir Modal de Edição
       if (e.target.classList.contains('edit-btn-card')) {
         const photoId = e.target.getAttribute('data-id');
         const photo = photos.find(p => p.id === photoId);
@@ -1018,31 +1087,23 @@
         }
       }
 
-      // NOVO: Sistema de Curtidas (Optimistic UI)
       if (e.target.classList.contains('like-btn')) {
         e.stopPropagation(); 
         const btn = e.target;
         const photoId = btn.getAttribute('data-id');
         const countSpan = document.getElementById(`like-count-${photoId}`);
         
-        // Efeito Pop Visual
         btn.classList.add('pop');
         setTimeout(() => btn.classList.remove('pop'), 300);
 
-        // Atualiza a tela instantaneamente
         let currentLikes = parseInt(countSpan.innerText) || 0;
         countSpan.innerText = currentLikes + 1;
 
-        // Atualiza no Firebase usando Increment
         try {
-          await photosCollection.doc(photoId).update({
-            likes: firebase.firestore.FieldValue.increment(1)
-          });
-          // Atualiza a variável local silenciosamente
+          await photosCollection.doc(photoId).update({ likes: firebase.firestore.FieldValue.increment(1) });
           const photoIndex = photos.findIndex(p => p.id === photoId);
           if (photoIndex > -1) photos[photoIndex].likes = currentLikes + 1;
         } catch (error) {
-          // Se der erro de rede, desfaz o +1 na tela
           countSpan.innerText = currentLikes;
           showToast("Erro ao enviar coração :(");
         }
@@ -1050,9 +1111,7 @@
     });
 
     // ---- Lógica do Modal de Edição ----
-    document.getElementById('closeEditModalBtn').onclick = () => {
-      document.getElementById('edit-photo-modal').style.display = 'none';
-    };
+    document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('edit-photo-modal').style.display = 'none';
 
     document.getElementById('saveEditBtn').onclick = async () => {
       const id = document.getElementById('editPhotoId').value;
@@ -1063,24 +1122,15 @@
       if (!newCaption) return showToast("A legenda não pode ficar vazia! 💞");
 
       const btn = document.getElementById('saveEditBtn');
-      btn.disabled = true;
-      btn.innerText = "Salvando...";
+      btn.disabled = true; btn.innerText = "Salvando...";
 
       try {
-        await photosCollection.doc(id).update({
-          caption: newCaption,
-          musicLink: newMusic,
-          unlockDate: newDate || null
-        });
+        await photosCollection.doc(id).update({ caption: newCaption, musicLink: newMusic, unlockDate: newDate || null });
         showToast("Lembrança atualizada! ✨");
         document.getElementById('edit-photo-modal').style.display = 'none';
         await loadPhotos(); 
-      } catch (error) {
-        showToast("Erro ao atualizar a lembrança.");
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Salvar Alterações";
-      }
+      } catch (error) { showToast("Erro ao atualizar a lembrança."); } 
+      finally { btn.disabled = false; btn.innerText = "Salvar Alterações"; }
     };
 
     // ---- Background Management ----
@@ -1111,18 +1161,13 @@
             applyBackground(resizedUrl);
             showToast("Fundo alterado com sucesso! ✨");
             document.getElementById('bgImageInput').value = '';
-        } catch (err) {
-            showToast("Erro ao alterar fundo.");
-        } finally {
-            btn.disabled = false; btn.textContent = 'Salvar Novo Fundo';
-        }
+        } catch (err) { showToast("Erro ao alterar fundo."); } 
+        finally { btn.disabled = false; btn.textContent = 'Salvar Novo Fundo'; }
       };
       reader.readAsDataURL(file);
     };
 
-    document.getElementById('removeBgBtn').onclick = () => {
-      if (confirm("Quer remover o fundo personalizado?")) removeBackground();
-    };
+    document.getElementById('removeBgBtn').onclick = () => { if (confirm("Quer remover o fundo personalizado?")) removeBackground(); };
 
     document.addEventListener('DOMContentLoaded', loadSettings);
   </script>
