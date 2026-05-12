@@ -179,6 +179,59 @@
       padding: 25px 10px 12px;
       box-sizing: border-box;
       font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .caption-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ---- NOVO: Sistema de Likes ---- */
+    .like-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .like-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2em;
+      padding: 0;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .like-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .like-btn.pop {
+      animation: popHeart 0.3s ease;
+    }
+
+    @keyframes popHeart {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.6); }
+      100% { transform: scale(1); }
+    }
+
+    .like-count {
+      font-weight: bold;
+      font-size: 0.95em;
     }
 
     /* ---- Cápsula do Tempo ---- */
@@ -302,7 +355,7 @@
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* ---- NOVO: Efeito Chuva de Corações ---- */
+    /* ---- Efeito Chuva de Corações ---- */
     .floating-heart {
       position: fixed;
       bottom: -10vh;
@@ -392,13 +445,12 @@
     }
 
     /* ---- Icones e Botoes Paginação ---- */
-    .caption .music-link-icon {
+    .music-link-icon {
       text-decoration: none;
       font-size: 1.2em;
-      margin-left: 8px;
       cursor: pointer; 
     }
-    .caption .music-link-icon:hover { opacity: 0.7; }
+    .music-link-icon:hover { opacity: 0.7; }
     .lightbox-music-link {
       display: inline-block;
       margin-top: 10px;
@@ -631,7 +683,7 @@
       setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 
-    // ---- NOVO: Efeito Chuva de Corações JS ----
+    // ---- Efeito Chuva de Corações JS ----
     function createHeartShower() {
       const emojis = ['❤️', '💖', '💕', '✨', '😍'];
       for (let i = 0; i < 40; i++) {
@@ -645,10 +697,7 @@
         heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem'; 
         
         document.body.appendChild(heart);
-        
-        setTimeout(() => {
-          heart.remove();
-        }, 7000); 
+        setTimeout(() => { heart.remove(); }, 7000); 
       }
     }
 
@@ -678,7 +727,7 @@
         await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
         showToast("Fundo removido com sucesso!");
       } catch (error) {
-        showToast("Erro ao remover fundo do sistema.");
+        showToast("Erro ao remover fundo.");
       }
     }
 
@@ -717,6 +766,15 @@
         const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
         const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
         
+        // NOVO: Renderiza o Contador de Likes
+        const likesCount = photo.likes || 0;
+        const likeBtnHTML = `
+          <div class="like-container" title="Curtir momento">
+            <button class="like-btn" data-id="${photo.id}">❤️</button>
+            <span class="like-count" id="like-count-${photo.id}">${likesCount}</span>
+          </div>
+        `;
+
         let textoLegenda = photo.caption;
         if (isLocked) {
           const dataBr = photo.unlockDate.split('-').reverse().join('/');
@@ -728,7 +786,12 @@
           <button class="edit-btn-card" data-id="${photo.id}" title="Editar Lembrança">✏️</button>
           ${lockIconHTML}
           <img src="${photo.url}" alt="Lembrança" data-id="${photo.id}" data-index-in-page="${originalIndex}">
-          <div class="caption">${textoLegenda} ${musicIconHTML}</div>`;
+          <div class="caption">
+            <div class="caption-content">
+              <span>${textoLegenda}</span> ${musicIconHTML}
+            </div>
+            ${likeBtnHTML}
+          </div>`;
         
         gallery.appendChild(div);
       });
@@ -793,9 +856,7 @@
           lightbox.classList.add('visible');
         });
       });
-      document.querySelectorAll('.music-link-icon').forEach(icon => {
-        icon.addEventListener('click', (e) => e.stopPropagation());
-      });
+      document.querySelectorAll('.music-link-icon').forEach(icon => icon.addEventListener('click', (e) => e.stopPropagation()));
     }
 
     document.querySelector('.close-lightbox').onclick = () => lightbox.classList.remove('visible');
@@ -813,7 +874,7 @@
     // ---- Interações Iniciais e Login Customizado ----
     document.getElementById('enterBtn').onclick = () => {
       introScreen.classList.add('fade-out');
-      createHeartShower(); // Aciona a chuva de corações ao entrar!
+      createHeartShower(); 
       
       setTimeout(() => {
         introScreen.style.display = 'none';
@@ -849,7 +910,7 @@
       showToast("Dica: É como eu te chamo carinhosamente (tudo junto e minúsculo) 💕");
     };
 
-    // ---- Upload de Fotos e Cápsula do Tempo ----
+    // ---- Upload de Fotos ----
     document.getElementById('addPhoto').onclick = () => {
       const fileInput = document.getElementById('imageInput');
       const captionInput = document.getElementById('captionInput');
@@ -900,16 +961,18 @@
             
             const url = await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.8));
 
+            // NOVO: Adicionado likes: 0 na criação
             await photosCollection.add({
                 url: url,
                 caption: caption,
                 musicLink: musicLink,
                 unlockDate: unlockDate || null,
+                likes: 0,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             
             showToast("Memória guardada com sucesso! 💖");
-            createHeartShower(); // Aciona a chuva de corações ao guardar uma memória!
+            createHeartShower(); 
             
             document.getElementById('imageInput').value = '';
             document.getElementById('captionInput').value = '';
@@ -927,7 +990,7 @@
       };
     }
 
-    // ---- Controles da Galeria (Apagar e Editar) ----
+    // ---- Controles da Galeria (Apagar, Editar e CURTIR) ----
     gallery.addEventListener('click', async (e) => {
       // Deletar
       if (e.target.classList.contains('delete-btn')) {
@@ -952,6 +1015,36 @@
           document.getElementById('editMusicLinkInput').value = photo.musicLink || '';
           document.getElementById('editUnlockDateInput').value = photo.unlockDate || '';
           document.getElementById('edit-photo-modal').style.display = 'flex';
+        }
+      }
+
+      // NOVO: Sistema de Curtidas (Optimistic UI)
+      if (e.target.classList.contains('like-btn')) {
+        e.stopPropagation(); 
+        const btn = e.target;
+        const photoId = btn.getAttribute('data-id');
+        const countSpan = document.getElementById(`like-count-${photoId}`);
+        
+        // Efeito Pop Visual
+        btn.classList.add('pop');
+        setTimeout(() => btn.classList.remove('pop'), 300);
+
+        // Atualiza a tela instantaneamente
+        let currentLikes = parseInt(countSpan.innerText) || 0;
+        countSpan.innerText = currentLikes + 1;
+
+        // Atualiza no Firebase usando Increment
+        try {
+          await photosCollection.doc(photoId).update({
+            likes: firebase.firestore.FieldValue.increment(1)
+          });
+          // Atualiza a variável local silenciosamente
+          const photoIndex = photos.findIndex(p => p.id === photoId);
+          if (photoIndex > -1) photos[photoIndex].likes = currentLikes + 1;
+        } catch (error) {
+          // Se der erro de rede, desfaz o +1 na tela
+          countSpan.innerText = currentLikes;
+          showToast("Erro ao enviar coração :(");
         }
       }
     });
