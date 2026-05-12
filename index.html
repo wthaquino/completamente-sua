@@ -181,7 +181,7 @@
       font-weight: 600;
     }
 
-    /* ---- CSS NOVO: Cápsula do Tempo ---- */
+    /* ---- Cápsula do Tempo ---- */
     .photo.locked img {
       filter: blur(15px) grayscale(40%);
       transform: scale(1.1); 
@@ -206,7 +206,7 @@
       background: rgba(0,0,0,0.9);
     }
 
-    /* ---- Botoes e Editor ---- */
+    /* ---- Botoes de Controle da Foto (Apagar e Editar) ---- */
     .navigation-buttons { display: none; }
 
     .delete-btn {
@@ -227,10 +227,30 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
-    #main-content.edit-mode-active .delete-btn {
+    .edit-btn-card {
+      position: absolute;
+      top: 10px;
+      right: 55px; /* Fica ao lado do botão de apagar */
+      background: #ffbcda;
+      color: #8e1e5c;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 1.1em;
+      cursor: pointer;
+      z-index: 10;
+      display: none; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      padding: 0;
+    }
+
+    #main-content.edit-mode-active .delete-btn,
+    #main-content.edit-mode-active .edit-btn-card {
       display: block;
     }
 
+    /* ---- Editor ---- */
     #editor {
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(12px);
@@ -454,6 +474,25 @@
     </div>
   </div>
 
+  <!-- NOVO: Modal de Edição de Foto -->
+  <div id="edit-photo-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2600; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 450px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+      <button id="closeEditModalBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
+      <h3 style="margin-top: 0; color: white;">✏️ Editar Lembrança</h3>
+      
+      <input type="hidden" id="editPhotoId">
+      
+      <input type="text" id="editCaptionInput" placeholder="Nova legenda" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
+      
+      <input type="text" id="editMusicLinkInput" placeholder="Novo link do Spotify" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
+      
+      <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; color: white; font-weight: bold;">Data de revelação ⏳:</p>
+      <input type="date" id="editUnlockDateInput" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
+      
+      <button id="saveEditBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);">Salvar Alterações</button>
+    </div>
+  </div>
+
   <!-- Conteúdo Principal -->
   <div id="main-content" class="hidden">
     <header>
@@ -642,8 +681,10 @@
           textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
         }
 
+        // NOVO: Adicionado botão de Editar (lápis)
         div.innerHTML = `
-          <button class="delete-btn" data-id="${photo.id}">×</button>
+          <button class="delete-btn" data-id="${photo.id}" title="Apagar Lembrança">×</button>
+          <button class="edit-btn-card" data-id="${photo.id}" title="Editar Lembrança">✏️</button>
           ${lockIconHTML}
           <img src="${photo.url}" alt="Lembrança" data-id="${photo.id}" data-index-in-page="${originalIndex}">
           <div class="caption">${textoLegenda} ${musicIconHTML}</div>`;
@@ -841,8 +882,9 @@
       };
     }
 
-    // ---- Apagar Fotos ----
+    // ---- Controles da Galeria (Apagar e Editar) ----
     gallery.addEventListener('click', async (e) => {
+      // Deletar
       if (e.target.classList.contains('delete-btn')) {
         if (confirm("Tem certeza que quer apagar esta lembrança para sempre?")) {
           try {
@@ -854,7 +896,54 @@
           }
         }
       }
+      
+      // Abrir Modal de Edição
+      if (e.target.classList.contains('edit-btn-card')) {
+        const photoId = e.target.getAttribute('data-id');
+        const photo = photos.find(p => p.id === photoId);
+        if (photo) {
+          document.getElementById('editPhotoId').value = photo.id;
+          document.getElementById('editCaptionInput').value = photo.caption || '';
+          document.getElementById('editMusicLinkInput').value = photo.musicLink || '';
+          document.getElementById('editUnlockDateInput').value = photo.unlockDate || '';
+          document.getElementById('edit-photo-modal').style.display = 'flex';
+        }
+      }
     });
+
+    // ---- Lógica do Modal de Edição ----
+    document.getElementById('closeEditModalBtn').onclick = () => {
+      document.getElementById('edit-photo-modal').style.display = 'none';
+    };
+
+    document.getElementById('saveEditBtn').onclick = async () => {
+      const id = document.getElementById('editPhotoId').value;
+      const newCaption = document.getElementById('editCaptionInput').value;
+      const newMusic = document.getElementById('editMusicLinkInput').value;
+      const newDate = document.getElementById('editUnlockDateInput').value;
+
+      if (!newCaption) return showToast("A legenda não pode ficar vazia! 💞");
+
+      const btn = document.getElementById('saveEditBtn');
+      btn.disabled = true;
+      btn.innerText = "Salvando...";
+
+      try {
+        await photosCollection.doc(id).update({
+          caption: newCaption,
+          musicLink: newMusic,
+          unlockDate: newDate || null
+        });
+        showToast("Lembrança atualizada! ✨");
+        document.getElementById('edit-photo-modal').style.display = 'none';
+        await loadPhotos(); // Recarrega a galeria para mostrar as mudanças
+      } catch (error) {
+        showToast("Erro ao atualizar a lembrança.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Salvar Alterações";
+      }
+    };
 
     // ---- Background Management ----
     document.getElementById('changeBgBtn').onclick = async () => {
