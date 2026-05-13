@@ -1292,6 +1292,52 @@
     document.getElementById('removeBgBtn').onclick = () => { if (confirm("Quer remover o fundo personalizado?")) removeBackground(); };
 
     document.addEventListener('DOMContentLoaded', loadSettings);
+ // ---- LÓGICA DO MAPA INTERATIVO ----
+    const mapModal = document.getElementById('map-modal');
+    const enigmaModal = document.getElementById('enigma-modal');
+    
+    // Variável para guardar a resposta certa do pino clicado
+    let respostaCorretaAtual = ""; 
+
+    // Botão de abrir e botão de fechar o mapa
+    const openMapBtn = document.getElementById('openMapBtn');
+    const closeMapBtn = document.getElementById('closeMapBtn');
+
+    if(openMapBtn && mapModal) {
+      openMapBtn.onclick = () => { mapModal.style.display = 'flex'; };
+    }
+
+    if(closeMapBtn && mapModal && enigmaModal) {
+      closeMapBtn.onclick = () => {
+        mapModal.style.display = 'none';
+        enigmaModal.style.display = 'none';
+      };
+    }
+
+    // Função que é chamada quando clica no pino no mapa
+    window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
+      document.getElementById('enigma-title').innerText = "📍 " + lugar;
+      document.getElementById('enigma-question').innerText = pergunta;
+      document.getElementById('enigma-answer').value = ""; // Limpa o campo para ela digitar
+      
+      respostaCorretaAtual = respostaCerta.toLowerCase().trim();
+      enigmaModal.style.display = 'block';
+    };
+
+    // Verifica se ela digitou a resposta certa do enigma
+    const btnResolver = document.getElementById('btn-resolver-enigma');
+    if(btnResolver) {
+      btnResolver.onclick = () => {
+        const tentativa = document.getElementById('enigma-answer').value.toLowerCase().trim();
+        
+        if (tentativa === respostaCorretaAtual) {
+          showToast("Parabéns! Você desbloqueou esta memória! 🎉");
+          enigmaModal.style.display = 'none';
+        } else {
+          showToast("Humm... resposta errada. Tente de novo! 🤔");
+        }
+      };
+    }
   </script>
 </body>
 </html>
