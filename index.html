@@ -671,6 +671,8 @@
   <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
   <script>
     // ---- Configuração Firebase ----
@@ -685,6 +687,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth(); 
     const photosCollection = db.collection("photos");
     const settingsDoc = db.collection("settings").doc("appSettings");
 
@@ -979,13 +982,31 @@
 
     document.getElementById('closeLoginBtn').onclick = () => loginModal.style.display = 'none';
 
-    document.getElementById('confirmLoginBtn').onclick = () => {
-      if (senhaInput.value === "meuamorzinho") {
+   document.getElementById('confirmLoginBtn').onclick = async () => {
+      const senhaDigitada = senhaInput.value;
+      const btn = document.getElementById('confirmLoginBtn');
+      
+      btn.disabled = true;
+      btn.innerText = "Verificando...";
+
+      try {
+        // Tenta fazer o login real no Firebase
+        await auth.signInWithEmailAndPassword('admin@nossocantinho.com', senhaDigitada);
+        
+        // Se a senha estiver correta, o código continua aqui:
         editor.classList.toggle('hidden');
         mainContent.classList.toggle('edit-mode-active');
         loginModal.style.display = 'none';
         showToast("Modo de edição liberado! ✨");
-      } else { showToast("Senha incorreta 💔"); }
+        
+      } catch (error) {
+        // Se a senha estiver errada, o Firebase joga um erro e cai aqui:
+        showToast("Chave mestra incorreta 💔");
+        console.error("Erro de login:", error.code);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Acessar Painel";
+      }
     };
 
     document.getElementById('forgotPasswordBtn').onclick = () => showToast("Dica: É como eu te chamo carinhosamente (tudo junto e minúsculo) 💕");
