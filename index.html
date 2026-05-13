@@ -1344,6 +1344,81 @@
           <script type="module">
              // Aqui termina toda a parte do seu JavaScript...
              // ...
+       // ---- SISTEMA DE INJEÇÃO DO MAPA INTERATIVO ----
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Cria o mapa direto pelo código (evita erros de posição no HTML)
+        const mapHTML = `
+          <div id="map-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+            <button id="closeMapBtn" style="position: absolute; top: 20px; right: 30px; background: none; border: none; color: white; font-size: 2.5em; cursor: pointer;">&times;</button>
+            <h2 style="color: white; font-family: 'Dancing Script', cursive; font-size: 3em; margin-bottom: 10px;">Nossas Memórias pelo Mundo</h2>
+            
+            <div style="position: relative; width: 90%; max-width: 1000px; aspect-ratio: 2 / 1; background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg'); background-size: contain; background-repeat: no-repeat; background-position: center; filter: drop-shadow(0 0 20px rgba(255, 92, 141, 0.5));">
+              
+              <!-- PINO: EUA (Orphan Black) -->
+              <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 35%; left: 25%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('EUA', 'Qual é a palavra secreta do Clone Club?', 'sestras')"></div>
+              
+              <!-- PINO: BRASIL (Ubatuba) -->
+              <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 70%; left: 33%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('Brasil', 'Qual foi a data da nossa viagem para Ubatuba? (dd/mm/aaaa)', '21/04/2026')"></div>
+              
+              <!-- PINO: ITÁLIA (Pizza) -->
+              <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 30%; left: 51%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('Itália', 'O prato perfeito que eu preparo para nós. (Dica: vai no forno)', 'Pizza')"></div>
+            </div>
+
+            <!-- MODAL DO ENIGMA -->
+            <div id="enigma-modal" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 80%; max-width: 400px; display: none; color: white; text-align: center;">
+              <h3 id="enigma-title" style="margin-top: 0; color: #ffbcda;">Lugar</h3>
+              <p id="enigma-question" style="font-size: 1.1em; font-weight: bold;">Pergunta</p>
+              <input type="text" id="enigma-answer" placeholder="Sua resposta..." style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; text-align: center;">
+              <button id="btn-resolver-enigma" style="background: #ff5c8d; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">Desbloquear Memória 🔓</button>
+              <button id="closeEnigmaBtn" style="background: transparent; border: none; color: white; margin-top: 15px; cursor: pointer; text-decoration: underline;">Voltar ao Mapa</button>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', mapHTML);
+
+        // 2. Conecta a ação do botão ao mapa gerado
+        const mapModal = document.getElementById('map-modal');
+        const enigmaModal = document.getElementById('enigma-modal');
+        const openMapBtn = document.getElementById('openMapBtn');
+        
+        if(openMapBtn) {
+            openMapBtn.onclick = (e) => {
+                e.preventDefault();
+                mapModal.style.display = 'flex';
+            };
+        }
+
+        document.getElementById('closeMapBtn').onclick = () => {
+            mapModal.style.display = 'none';
+            enigmaModal.style.display = 'none';
+        };
+
+        document.getElementById('closeEnigmaBtn').onclick = () => {
+            enigmaModal.style.display = 'none';
+        };
+
+        // 3. Regras dos Enigmas
+        let respostaCorretaAtual = "";
+        
+        window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
+            document.getElementById('enigma-title').innerText = "📍 " + lugar;
+            document.getElementById('enigma-question').innerText = pergunta;
+            document.getElementById('enigma-answer').value = "";
+            respostaCorretaAtual = respostaCerta.toLowerCase().trim();
+            enigmaModal.style.display = 'block';
+        };
+
+        document.getElementById('btn-resolver-enigma').onclick = () => {
+            const tentativa = document.getElementById('enigma-answer').value.toLowerCase().trim();
+            if(tentativa === respostaCorretaAtual) {
+                alert("Parabéns! Você desbloqueou esta memória! 🎉");
+                enigmaModal.style.display = 'none';
+            } else {
+                alert("Humm... resposta errada. Tente de novo! 🤔");
+            }
+        };
+    });
+          
           </script>
     </body>
 </html>
