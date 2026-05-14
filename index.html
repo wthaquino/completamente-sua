@@ -716,7 +716,27 @@
       <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação (Cápsula do tempo) ⏳:</p>
       <input type="date" id="unlockDateInput" title="Deixe vazio para mostrar na hora">
       <button id="addPhoto" style="margin-top: 20px; padding: 15px;">Guardar Momento</button>
+<!-- ========================================== -->
+      <!-- NOVO: FORMULÁRIO PARA ADICIONAR PINOS NO MAPA -->
+      <!-- ========================================== -->
+      <hr style="border: 1px solid #ffbcda; margin: 30px 0;">
+      <h3 style="color: #d86ca3; margin-bottom: 15px;">📍 Adicionar Novo Pino no Mapa</h3>
+      
+      <input type="text" id="pin-cidade" placeholder="Nome do Lugar (Ex: Ubatuba, Brasil)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+      
+      <input type="text" id="pin-pergunta" placeholder="Pergunta do Enigma" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+      
+      <input type="text" id="pin-resposta" placeholder="Resposta Correta (Ex: 21/04/2026)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="text" id="pin-top" placeholder="Posição Y (Ex: 70%)" style="width: 50%; padding: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+        <input type="text" id="pin-left" placeholder="Posição X (Ex: 33%)" style="width: 50%; padding: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+      </div>
 
+      <!-- Opcional: Link de uma foto de recompensa que você já subiu pro Cloudinary -->
+      <input type="text" id="pin-recompensa" placeholder="Link da Foto de Recompensa (Opcional)" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ffbcda;">
+
+      <button id="btn-salvar-pin" style="background: #ff5c8d; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">Salvar Pino no Banco de Dados 💾</button>
       <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
       <h2 style="color: white;">🎨 Estilo da Página</h2>
       <input type="file" id="bgImageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
@@ -1418,7 +1438,61 @@
             }
         };
     });
-          
+          // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
+    const btnSalvarPin = document.getElementById('btn-salvar-pin');
+
+    if(btnSalvarPin) {
+        btnSalvarPin.addEventListener('click', async () => {
+            // Pega os valores que você digitou
+            const cidade = document.getElementById('pin-cidade').value;
+            const pergunta = document.getElementById('pin-pergunta').value;
+            const resposta = document.getElementById('pin-resposta').value;
+            const topPos = document.getElementById('pin-top').value;
+            const leftPos = document.getElementById('pin-left').value;
+            const recompensa = document.getElementById('pin-recompensa').value;
+
+            // Validação simples: não deixa salvar se faltar o básico
+            if (!cidade || !pergunta || !resposta || !topPos || !leftPos) {
+                alert("Por favor, preencha todos os campos obrigatórios do pino!");
+                return;
+            }
+
+            try {
+                // Muda o texto do botão para mostrar que está processando
+                btnSalvarPin.innerText = "Salvando na nuvem... ⏳";
+                btnSalvarPin.disabled = true;
+
+                // Salva no banco de dados do Firebase na coleção 'map_pins'
+                await addDoc(collection(db, "map_pins"), {
+                    cidade: cidade,
+                    pergunta: pergunta,
+                    resposta_certa: resposta.toLowerCase().trim(), // Salva a resposta padronizada
+                    posicao_top: topPos,
+                    posicao_left: leftPos,
+                    recompensa_url: recompensa || "", // Se estiver vazio, salva vazio
+                    data_criacao: new Date()
+                });
+
+                alert("Pino adicionado com sucesso no mapa!");
+                
+                // Limpa os campos
+                document.getElementById('pin-cidade').value = "";
+                document.getElementById('pin-pergunta').value = "";
+                document.getElementById('pin-resposta').value = "";
+                document.getElementById('pin-top').value = "";
+                document.getElementById('pin-left').value = "";
+                document.getElementById('pin-recompensa').value = "";
+
+            } catch (error) {
+                console.error("Erro ao salvar pino: ", error);
+                alert("Erro de permissão! Você precisa estar logado com a senha mestre.");
+            } finally {
+                // Restaura o botão
+                btnSalvarPin.innerText = "Salvar Pino no Banco de Dados 💾";
+                btnSalvarPin.disabled = false;
+            }
+        });
+    }
           </script>
     </body>
 </html>
