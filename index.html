@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+c/<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -864,7 +864,7 @@
 
     // ---- Lógica de Fundo da Página ----
     function applyBackground(imageUrl) {
-      const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
+      const bgValue = imageUrl ? ${bgGradient}, url(${imageUrl}) : bgGradientSolid;
       document.body.style.background = bgValue;
       introScreen.style.background = bgValue;
       const styles = { backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' };
@@ -928,7 +928,7 @@
       paginationControls.innerHTML = '';
 
       if (filteredPhotos.length === 0) {
-        gallery.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada para este filtro.</div>`;
+        gallery.innerHTML = <div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada para este filtro.</div>;
         return;
       }
 
@@ -946,11 +946,11 @@
         const hoje = new Date().toISOString().split('T')[0];
         const isLocked = photo.unlockDate && photo.unlockDate > hoje;
         
-        div.className = `photo ${isLocked ? 'locked' : ''}`;
-        div.style.animationDelay = `${index * 0.15}s`;
+        div.className = photo ${isLocked ? 'locked' : ''};
+        div.style.animationDelay = ${index * 0.15}s;
 
-        const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
-        const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
+        const musicIconHTML = (!isLocked && photo.musicLink) ? <a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a> : '';
+        const lockIconHTML = isLocked ? <div class="lock-icon">🔒</div> : '';
         
         const likesCount = photo.likes || 0;
         const likeBtnHTML = `
@@ -963,7 +963,7 @@
         let textoLegenda = photo.caption;
         if (isLocked) {
           const dataBr = photo.unlockDate.split('-').reverse().join('/');
-          textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
+          textoLegenda = Mistério... Disponível em ${dataBr} ⏳;
         }
 
         div.innerHTML = `
@@ -1045,8 +1045,8 @@
 
       document.getElementById('lightbox-img').src = photo.url;
       const lbCaption = document.getElementById('lightbox-caption');
-      lbCaption.innerHTML = `<div>${photo.caption}</div>`; 
-      if (photo.musicLink) lbCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
+      lbCaption.innerHTML = <div>${photo.caption}</div>; 
+      if (photo.musicLink) lbCaption.innerHTML += <a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>;
       
       document.getElementById('lightbox-prev').disabled = (index === 0);
       document.getElementById('lightbox-next').disabled = (index === filteredPhotos.length - 1);
@@ -1159,7 +1159,7 @@
       const formData = new FormData();
       formData.append('file', base64Image);
       formData.append('upload_preset', UPLOAD_PRESET);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+      const res = await fetch(https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload, { method: 'POST', body: formData });
       const data = await res.json();
       if (data.secure_url) return data.secure_url;
       throw new Error('Upload failed');
@@ -1233,7 +1233,7 @@
         e.stopPropagation(); 
         const btn = e.target;
         const photoId = btn.getAttribute('data-id');
-        const countSpan = document.getElementById(`like-count-${photoId}`);
+        const countSpan = document.getElementById(like-count-${photoId});
         
         btn.classList.add('pop');
         setTimeout(() => btn.classList.remove('pop'), 300);
@@ -1439,11 +1439,11 @@
         };
     });
           // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
+  // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
     const btnSalvarPin = document.getElementById('btn-salvar-pin');
 
     if(btnSalvarPin) {
         btnSalvarPin.addEventListener('click', async () => {
-            // Pega os valores que você digitou
             const cidade = document.getElementById('pin-cidade').value;
             const pergunta = document.getElementById('pin-pergunta').value;
             const resposta = document.getElementById('pin-resposta').value;
@@ -1451,29 +1451,27 @@
             const leftPos = document.getElementById('pin-left').value;
             const recompensa = document.getElementById('pin-recompensa').value;
 
-            // Validação simples: não deixa salvar se faltar o básico
             if (!cidade || !pergunta || !resposta || !topPos || !leftPos) {
                 alert("Por favor, preencha todos os campos obrigatórios do pino!");
                 return;
             }
 
             try {
-                // Muda o texto do botão para mostrar que está processando
                 btnSalvarPin.innerText = "Salvando na nuvem... ⏳";
                 btnSalvarPin.disabled = true;
 
-                // Salva no banco de dados do Firebase na coleção 'map_pins'
-                await addDoc(collection(db, "map_pins"), {
+                // CÓDIGO CORRIGIDO: Conversando com o Firestore na versão certa
+                await db.collection("map_pins").add({
                     cidade: cidade,
                     pergunta: pergunta,
-                    resposta_certa: resposta.toLowerCase().trim(), // Salva a resposta padronizada
+                    resposta_certa: resposta.toLowerCase().trim(),
                     posicao_top: topPos,
                     posicao_left: leftPos,
-                    recompensa_url: recompensa || "", // Se estiver vazio, salva vazio
-                    data_criacao: new Date()
+                    recompensa_url: recompensa || "",
+                    data_criacao: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert("Pino adicionado com sucesso no mapa!");
+                alert("Pino adicionado com sucesso no mapa! 🎉");
                 
                 // Limpa os campos
                 document.getElementById('pin-cidade').value = "";
@@ -1484,10 +1482,10 @@
                 document.getElementById('pin-recompensa').value = "";
 
             } catch (error) {
-                console.error("Erro ao salvar pino: ", error);
-                alert("Erro de permissão! Você precisa estar logado com a senha mestre.");
+                // Se der erro agora, o console vai nos mostrar a verdade!
+                console.error("ERRO REAL AO SALVAR:", error);
+                alert("Ocorreu um erro interno! Aperte F12 e olhe a aba Console para descobrir o que foi.");
             } finally {
-                // Restaura o botão
                 btnSalvarPin.innerText = "Salvar Pino no Banco de Dados 💾";
                 btnSalvarPin.disabled = false;
             }
