@@ -1417,7 +1417,7 @@ c/<!DOCTYPE html>
             enigmaModal.style.display = 'none';
         };
 
-        // 3. Regras dos Enigmas
+      // 3. Regras dos Enigmas
         let respostaCorretaAtual = "";
         
         window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
@@ -1437,9 +1437,9 @@ c/<!DOCTYPE html>
                 alert("Humm... resposta errada. Tente de novo! 🤔");
             }
         };
-    });
-          // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
-  // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
+    }); // <--- ESTA FOI A CHAVE QUE HAVIA SUMIDO!
+
+    // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
     const btnSalvarPin = document.getElementById('btn-salvar-pin');
 
     if(btnSalvarPin) {
@@ -1482,7 +1482,6 @@ c/<!DOCTYPE html>
                 document.getElementById('pin-recompensa').value = "";
 
             } catch (error) {
-                // Se der erro agora, o console vai nos mostrar a verdade!
                 console.error("ERRO REAL AO SALVAR:", error);
                 alert("Ocorreu um erro interno! Aperte F12 e olhe a aba Console para descobrir o que foi.");
             } finally {
@@ -1491,6 +1490,6 @@ c/<!DOCTYPE html>
             }
         });
     }
-          </script>
-    </body>
+    </script>
+</body>
 </html>
