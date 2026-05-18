@@ -1,4 +1,4 @@
-c/<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -103,6 +103,9 @@ c/<!DOCTYPE html>
       padding: 25px;
       box-shadow: 0 0 15px rgba(255, 182, 193, 0.3);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 9999;
+      pointer-events: auto;
     }
     h1 {
       font-family: "Dancing Script", cursive;
@@ -110,6 +113,16 @@ c/<!DOCTYPE html>
       color: #fff;
       margin: 0;
     }
+    
+    .header-buttons {
+      display: flex; 
+      justify-content: center;
+      gap: 10px; 
+      margin-top: 15px;
+      position: relative; 
+      z-index: 10000;
+    }
+
     #editBtn {
       background: #ff5c8d;
       border: none;
@@ -118,10 +131,23 @@ c/<!DOCTYPE html>
       cursor: pointer;
       color: #fff;
       font-weight: bold;
-      margin-top: 15px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      pointer-events: auto;
     }
     #editBtn:hover { background: #e64c7c; transform: translateY(-2px); }
+
+    #openMapBtn {
+      background: #d86ca3;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      pointer-events: auto;
+    }
+    #openMapBtn:hover { background: #b85488; transform: translateY(-2px); }
 
     /* ---- NOVO: Controles da Linha do Tempo ---- */
     #gallery-controls {
@@ -558,6 +584,7 @@ c/<!DOCTYPE html>
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
       z-index: 999;
     }
+    
     /* ---- SISTEMA DO MAPA MÚNDI ---- */
     #map-modal {
       position: fixed;
@@ -588,7 +615,6 @@ c/<!DOCTYPE html>
       width: 90%;
       max-width: 1000px;
       aspect-ratio: 2 / 1;
-      /* Imagem de um mapa múndi limpo e minimalista */
       background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
       background-size: contain;
       background-repeat: no-repeat;
@@ -607,7 +633,6 @@ c/<!DOCTYPE html>
       box-shadow: 0 0 15px #ff5c8d;
     }
 
-    /* Animação do pino pulsando */
     .map-pin::after {
       content: '';
       position: absolute;
@@ -621,7 +646,8 @@ c/<!DOCTYPE html>
       0% { transform: scale(1); opacity: 1; }
       100% { transform: scale(3); opacity: 0; }
     }
-     /* Modal do Enigma */
+    
+    /* Modal do Enigma */
     #enigma-modal {
       position: absolute;
       top: 50%; left: 50%;
@@ -684,17 +710,13 @@ c/<!DOCTYPE html>
   <div id="main-content" class="hidden">
      <header>
       <h1>Nosso Cantinho 💕</h1>
-      
-      <!-- Esta div funciona como uma caixa para agrupar os botões lado a lado -->
-      <div>
-        <button id="openMapBtn" onclick="document.getElementById('map-modal').style.display = 'flex';" style="background: #d86ca3; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: #fff; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); pointer-events: auto;">Explorar Mapa 🌍</button>
-        
+      <div class="header-buttons">
+        <button id="openMapBtn">Explorar Mapa 🌍</button>
         <button id="editBtn">Modo Edição</button>
       </div>
-
     </header>
 
-    <!-- NOVO: Controles da Linha do Tempo e Filtros -->
+    <!-- Controles da Linha do Tempo e Filtros -->
     <div id="gallery-controls">
       <button class="control-btn active" data-sort="desc" id="sort-desc-btn">Mais Recentes</button>
       <button class="control-btn" data-sort="asc" id="sort-asc-btn">Mais Antigas</button>
@@ -716,16 +738,13 @@ c/<!DOCTYPE html>
       <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação (Cápsula do tempo) ⏳:</p>
       <input type="date" id="unlockDateInput" title="Deixe vazio para mostrar na hora">
       <button id="addPhoto" style="margin-top: 20px; padding: 15px;">Guardar Momento</button>
-<!-- ========================================== -->
-      <!-- NOVO: FORMULÁRIO PARA ADICIONAR PINOS NO MAPA -->
-      <!-- ========================================== -->
+
+      <!-- FORMULÁRIO PARA ADICIONAR PINOS NO MAPA -->
       <hr style="border: 1px solid #ffbcda; margin: 30px 0;">
       <h3 style="color: #d86ca3; margin-bottom: 15px;">📍 Adicionar Novo Pino no Mapa</h3>
       
       <input type="text" id="pin-cidade" placeholder="Nome do Lugar (Ex: Ubatuba, Brasil)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-      
       <input type="text" id="pin-pergunta" placeholder="Pergunta do Enigma" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-      
       <input type="text" id="pin-resposta" placeholder="Resposta Correta (Ex: 21/04/2026)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
       
       <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -733,10 +752,9 @@ c/<!DOCTYPE html>
         <input type="text" id="pin-left" placeholder="Posição X (Ex: 33%)" style="width: 50%; padding: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
       </div>
 
-      <!-- Opcional: Link de uma foto de recompensa que você já subiu pro Cloudinary -->
       <input type="text" id="pin-recompensa" placeholder="Link da Foto de Recompensa (Opcional)" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ffbcda;">
-
       <button id="btn-salvar-pin" style="background: #ff5c8d; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">Salvar Pino no Banco de Dados 💾</button>
+      
       <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
       <h2 style="color: white;">🎨 Estilo da Página</h2>
       <input type="file" id="bgImageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
@@ -775,20 +793,7 @@ c/<!DOCTYPE html>
       <div id="lightbox-caption"></div>
     </div>
   </div>
-<!-- Conteúdo Principal -->
-  <div id="main-content" class="hidden">
-    
-   <header style="position: relative; z-index: 9999; pointer-events: auto;">
-      <h1>Nosso Cantinho 💕</h1>
-      <div style="display: flex; gap: 10px; position: relative; z-index: 10000;">
-        <button id="openMapBtn" style="background: #d86ca3; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: #fff; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); pointer-events: auto;">Explorar Mapa 🌍</button>
-        <button id="editBtn" style="pointer-events: auto;">Modo Edição</button>
-      </div>
-    </header>
 
-    <!-- NOVO: Controles da Linha do Tempo e Filtros -->
-    <div id="gallery-controls">
-      
   <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -818,14 +823,13 @@ c/<!DOCTYPE html>
 
     // ---- Variáveis de Estado da Aplicação ----
     let photos = [];
-    let filteredPhotos = []; // NOVO: Array para guardar o resultado dos filtros
+    let filteredPhotos = [];
     let currentPage = 1;
     const photosPerPage = 4;
     let currentLightboxIndex = 0; 
     
-    // NOVO: Estados de Filtro e Ordenação
-    let currentSortOrder = 'desc'; // desc = mais recentes, asc = mais antigas
-    let currentFilterType = 'all'; // all, unlocked, locked
+    let currentSortOrder = 'desc';
+    let currentFilterType = 'all';
 
     const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
     const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
@@ -864,7 +868,7 @@ c/<!DOCTYPE html>
 
     // ---- Lógica de Fundo da Página ----
     function applyBackground(imageUrl) {
-      const bgValue = imageUrl ? ${bgGradient}, url(${imageUrl}) : bgGradientSolid;
+      const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
       document.body.style.background = bgValue;
       introScreen.style.background = bgValue;
       const styles = { backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' };
@@ -888,19 +892,17 @@ c/<!DOCTYPE html>
       } catch (error) { showToast("Erro ao remover fundo."); }
     }
 
-    // ---- NOVO: Lógica de Processamento (Filtro e Ordenação) ----
+    // ---- Lógica de Processamento (Filtro e Ordenação) ----
     function processPhotos() {
       const hoje = new Date().toISOString().split('T')[0];
       
-      // 1. Filtrar
       filteredPhotos = photos.filter(photo => {
         const isLocked = photo.unlockDate && photo.unlockDate > hoje;
         if (currentFilterType === 'unlocked') return !isLocked;
         if (currentFilterType === 'locked') return isLocked;
-        return true; // 'all'
+        return true; 
       });
 
-      // 2. Ordenar
       filteredPhotos.sort((a, b) => {
         const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
         const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
@@ -911,11 +913,8 @@ c/<!DOCTYPE html>
     // ---- Carregamento de Fotos e Renderização ----
     async function loadPhotos() {
       try {
-        // Baixa tudo do Firebase uma vez só
         const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
         photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Aplica filtros, ordem e renderiza
         processPhotos();
         renderGalleryAndPagination(); 
       } catch (error) {
@@ -928,7 +927,7 @@ c/<!DOCTYPE html>
       paginationControls.innerHTML = '';
 
       if (filteredPhotos.length === 0) {
-        gallery.innerHTML = <div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada para este filtro.</div>;
+        gallery.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada para este filtro.</div>`;
         return;
       }
 
@@ -946,11 +945,11 @@ c/<!DOCTYPE html>
         const hoje = new Date().toISOString().split('T')[0];
         const isLocked = photo.unlockDate && photo.unlockDate > hoje;
         
-        div.className = photo ${isLocked ? 'locked' : ''};
-        div.style.animationDelay = ${index * 0.15}s;
+        div.className = `photo ${isLocked ? 'locked' : ''}`;
+        div.style.animationDelay = `${index * 0.15}s`;
 
-        const musicIconHTML = (!isLocked && photo.musicLink) ? <a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a> : '';
-        const lockIconHTML = isLocked ? <div class="lock-icon">🔒</div> : '';
+        const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
+        const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
         
         const likesCount = photo.likes || 0;
         const likeBtnHTML = `
@@ -963,7 +962,7 @@ c/<!DOCTYPE html>
         let textoLegenda = photo.caption;
         if (isLocked) {
           const dataBr = photo.unlockDate.split('-').reverse().join('/');
-          textoLegenda = Mistério... Disponível em ${dataBr} ⏳;
+          textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
         }
 
         div.innerHTML = `
@@ -1003,7 +1002,7 @@ c/<!DOCTYPE html>
           e.target.classList.add('active');
         }
 
-        currentPage = 1; // Reseta para a página 1 ao filtrar/ordenar
+        currentPage = 1; 
         processPhotos();
         renderGalleryAndPagination();
       });
@@ -1040,13 +1039,13 @@ c/<!DOCTYPE html>
     // ---- Lightbox (Foto Ampliada) ----
     function showLightboxPhoto(index) {
       currentLightboxIndex = index;
-      const photo = filteredPhotos[index]; // Usa o array filtrado!
+      const photo = filteredPhotos[index]; 
       if (!photo) return;
 
       document.getElementById('lightbox-img').src = photo.url;
       const lbCaption = document.getElementById('lightbox-caption');
-      lbCaption.innerHTML = <div>${photo.caption}</div>; 
-      if (photo.musicLink) lbCaption.innerHTML += <a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>;
+      lbCaption.innerHTML = `<div>${photo.caption}</div>`; 
+      if (photo.musicLink) lbCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
       
       document.getElementById('lightbox-prev').disabled = (index === 0);
       document.getElementById('lightbox-next').disabled = (index === filteredPhotos.length - 1);
@@ -1103,7 +1102,7 @@ c/<!DOCTYPE html>
 
     document.getElementById('closeLoginBtn').onclick = () => loginModal.style.display = 'none';
 
-   document.getElementById('confirmLoginBtn').onclick = async () => {
+    document.getElementById('confirmLoginBtn').onclick = async () => {
       const senhaDigitada = senhaInput.value;
       const btn = document.getElementById('confirmLoginBtn');
       
@@ -1111,17 +1110,14 @@ c/<!DOCTYPE html>
       btn.innerText = "Verificando...";
 
       try {
-        // Tenta fazer o login real no Firebase
         await auth.signInWithEmailAndPassword('admin@nossocantinho.com', senhaDigitada);
         
-        // Se a senha estiver correta, o código continua aqui:
         editor.classList.toggle('hidden');
         mainContent.classList.toggle('edit-mode-active');
         loginModal.style.display = 'none';
         showToast("Modo de edição liberado! ✨");
         
       } catch (error) {
-        // Se a senha estiver errada, o Firebase joga um erro e cai aqui:
         showToast("Chave mestra incorreta 💔");
         console.error("Erro de login:", error.code);
       } finally {
@@ -1159,7 +1155,7 @@ c/<!DOCTYPE html>
       const formData = new FormData();
       formData.append('file', base64Image);
       formData.append('upload_preset', UPLOAD_PRESET);
-      const res = await fetch(https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload, { method: 'POST', body: formData });
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (data.secure_url) return data.secure_url;
       throw new Error('Upload failed');
@@ -1233,7 +1229,7 @@ c/<!DOCTYPE html>
         e.stopPropagation(); 
         const btn = e.target;
         const photoId = btn.getAttribute('data-id');
-        const countSpan = document.getElementById(like-count-${photoId});
+        const countSpan = document.getElementById(`like-count-${photoId}`);
         
         btn.classList.add('pop');
         setTimeout(() => btn.classList.remove('pop'), 300);
@@ -1312,61 +1308,9 @@ c/<!DOCTYPE html>
     document.getElementById('removeBgBtn').onclick = () => { if (confirm("Quer remover o fundo personalizado?")) removeBackground(); };
 
     document.addEventListener('DOMContentLoaded', loadSettings);
- // ---- LÓGICA DO MAPA INTERATIVO ----
-    const mapModal = document.getElementById('map-modal');
-    const enigmaModal = document.getElementById('enigma-modal');
-    // Variável para guardar a resposta certa do pino clicado
-    let respostaCorretaAtual = ""; 
 
-    // Botão de abrir e botão de fechar o mapa
-    const openMapBtn = document.getElementById('openMapBtn');
-    const closeMapBtn = document.getElementById('closeMapBtn');
-
-    if(openMapBtn && mapModal) {
-      openMapBtn.onclick = () => { mapModal.style.display = 'flex'; };
-    }
-
-    if(closeMapBtn && mapModal && enigmaModal) {
-      closeMapBtn.onclick = () => {
-        mapModal.style.display = 'none';
-        enigmaModal.style.display = 'none';
-      };
-    }
-
-    // Função que é chamada quando clica no pino no mapa
-    window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
-      document.getElementById('enigma-title').innerText = "📍 " + lugar;
-      document.getElementById('enigma-question').innerText = pergunta;
-      document.getElementById('enigma-answer').value = ""; // Limpa o campo para ela digitar
-      
-      respostaCorretaAtual = respostaCerta.toLowerCase().trim();
-      enigmaModal.style.display = 'block';
-    };
-
-    // Verifica se ela digitou a resposta certa do enigma
-    const btnResolver = document.getElementById('btn-resolver-enigma');
-    if(btnResolver) {
-      btnResolver.onclick = () => {
-        const tentativa = document.getElementById('enigma-answer').value.toLowerCase().trim();
-        
-        if (tentativa === respostaCorretaAtual) {
-          showToast("Parabéns! Você desbloqueou esta memória! 🎉");
-          enigmaModal.style.display = 'none';
-        } else {
-          showToast("Humm... resposta errada. Tente de novo! 🤔");
-        }
-      };
-    }
-  </script>
-
-    <!-- TODO O SEU CÓDIGO DA GALERIA, BOTÕES E FIREBASE ESTÁ AQUI PARA CIMA -->
-          
-          <script type="module">
-             // Aqui termina toda a parte do seu JavaScript...
-             // ...
-       // ---- SISTEMA DE INJEÇÃO DO MAPA INTERATIVO ----
+    // ---- LÓGICA DO MAPA INTERATIVO (Injeção e Enigmas) ----
     document.addEventListener('DOMContentLoaded', () => {
-        // 1. Cria o mapa direto pelo código (evita erros de posição no HTML)
         const mapHTML = `
           <div id="map-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
             <button id="closeMapBtn" style="position: absolute; top: 20px; right: 30px; background: none; border: none; color: white; font-size: 2.5em; cursor: pointer;">&times;</button>
@@ -1374,17 +1318,11 @@ c/<!DOCTYPE html>
             
             <div style="position: relative; width: 90%; max-width: 1000px; aspect-ratio: 2 / 1; background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg'); background-size: contain; background-repeat: no-repeat; background-position: center; filter: drop-shadow(0 0 20px rgba(255, 92, 141, 0.5));">
               
-              <!-- PINO: EUA (Orphan Black) -->
               <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 35%; left: 25%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('EUA', 'Qual é a palavra secreta do Clone Club?', 'sestras')"></div>
-              
-              <!-- PINO: BRASIL (Ubatuba) -->
               <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 70%; left: 33%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('Brasil', 'Qual foi a data da nossa viagem para Ubatuba? (dd/mm/aaaa)', '21/04/2026')"></div>
-              
-              <!-- PINO: ITÁLIA (Pizza) -->
               <div style="position: absolute; width: 20px; height: 20px; background: #ff5c8d; border-radius: 50%; cursor: pointer; top: 30%; left: 51%; box-shadow: 0 0 15px #ff5c8d;" onclick="abrirEnigma('Itália', 'O prato perfeito que eu preparo para nós. (Dica: vai no forno)', 'Pizza')"></div>
             </div>
 
-            <!-- MODAL DO ENIGMA -->
             <div id="enigma-modal" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); padding: 30px; border-radius: 20px; backdrop-filter: blur(15px); box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 80%; max-width: 400px; display: none; color: white; text-align: center;">
               <h3 id="enigma-title" style="margin-top: 0; color: #ffbcda;">Lugar</h3>
               <p id="enigma-question" style="font-size: 1.1em; font-weight: bold;">Pergunta</p>
@@ -1396,7 +1334,6 @@ c/<!DOCTYPE html>
         `;
         document.body.insertAdjacentHTML('beforeend', mapHTML);
 
-        // 2. Conecta a ação do botão ao mapa gerado
         const mapModal = document.getElementById('map-modal');
         const enigmaModal = document.getElementById('enigma-modal');
         const openMapBtn = document.getElementById('openMapBtn');
@@ -1417,7 +1354,6 @@ c/<!DOCTYPE html>
             enigmaModal.style.display = 'none';
         };
 
-      // 3. Regras dos Enigmas
         let respostaCorretaAtual = "";
         
         window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
@@ -1437,7 +1373,7 @@ c/<!DOCTYPE html>
                 alert("Humm... resposta errada. Tente de novo! 🤔");
             }
         };
-    }); // <--- ESTA FOI A CHAVE QUE HAVIA SUMIDO!
+    });
 
     // ---- SISTEMA DE SALVAMENTO DE PINOS (MAPA) ----
     const btnSalvarPin = document.getElementById('btn-salvar-pin');
@@ -1460,7 +1396,6 @@ c/<!DOCTYPE html>
                 btnSalvarPin.innerText = "Salvando na nuvem... ⏳";
                 btnSalvarPin.disabled = true;
 
-                // CÓDIGO CORRIGIDO: Conversando com o Firestore na versão certa
                 await db.collection("map_pins").add({
                     cidade: cidade,
                     pergunta: pergunta,
@@ -1473,7 +1408,6 @@ c/<!DOCTYPE html>
 
                 alert("Pino adicionado com sucesso no mapa! 🎉");
                 
-                // Limpa os campos
                 document.getElementById('pin-cidade').value = "";
                 document.getElementById('pin-pergunta').value = "";
                 document.getElementById('pin-resposta').value = "";
@@ -1490,6 +1424,6 @@ c/<!DOCTYPE html>
             }
         });
     }
-    </script>
+  </script>
 </body>
 </html>
