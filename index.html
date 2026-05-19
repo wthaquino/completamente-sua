@@ -641,6 +641,129 @@
       h1 { font-size: 2.2em; } 
       #gallery-controls { flex-direction: row; font-size: 0.85em; } 
     }
+ /* =========================================
+       SISTEMA TAMAGOTCHI (O GATINHO)
+       ========================================= */
+    #pet-fab {
+      position: fixed;
+      bottom: 110px; /* Fica um pouco acima do player do Spotify */
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 2px solid #ffbcda;
+      border-radius: 50%;
+      font-size: 2em;
+      cursor: pointer;
+      z-index: 2000;
+      box-shadow: 0 4px 15px rgba(255, 92, 141, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease, background 0.3s;
+      animation: flutuarPet 3s ease-in-out infinite;
+    }
+
+    #pet-fab:hover {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    @keyframes flutuarPet {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    #tamagotchi-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 3100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .tamagotchi-container {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+
+    #pet-display {
+      font-size: 5em;
+      margin: 10px 0 20px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      animation: respirar 2s infinite alternate;
+    }
+
+    @keyframes respirar {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    /* Barras de Status */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+    
+    .status-bar-bg {
+      width: 65%;
+      height: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .status-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.5s ease-out, background-color 0.5s ease;
+    }
+
+    /* Botões de Ação do Pet */
+    .pet-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .pet-btn {
+      background: rgba(255, 92, 141, 0.8);
+      color: white;
+      border: 1px solid rgba(255, 188, 218, 0.5);
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: "Quicksand", sans-serif;
+    }
+
+    .pet-btn:hover {
+      background: #e64c7c;
+      transform: translateY(-2px);
+    }
+    
+    .pet-btn:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
@@ -807,7 +930,47 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<!-- =========================================
+       BOTÃO E MODAL DO TAMAGOTCHI (GATINHO)
+       ========================================= -->
+  <div id="pet-fab" title="Cuidar do nosso gatinho">🐱</div>
 
+  <div id="tamagotchi-modal">
+    <div class="tamagotchi-container">
+      <button id="closePetBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
+      
+      <h3 style="margin-top: 0; color: white; font-family: 'Dancing Script', cursive; font-size: 2.2em;">Nosso Gatinho 🐾</h3>
+      
+      <!-- Onde o gatinho aparece visualmente -->
+      <div id="pet-display">🐈</div>
+      
+      <!-- Status -->
+      <div class="status-row">
+        <span>Fome 🍗</span>
+        <div class="status-bar-bg"><div id="bar-fome" class="status-fill" style="width: 100%; background: #ff9f43;"></div></div>
+      </div>
+      <div class="status-row">
+        <span>Energia ⚡</span>
+        <div class="status-bar-bg"><div id="bar-energia" class="status-fill" style="width: 100%; background: #feca57;"></div></div>
+      </div>
+      <div class="status-row">
+        <span>Diversão 🧶</span>
+        <div class="status-bar-bg"><div id="bar-diversao" class="status-fill" style="width: 100%; background: #ff5c8d;"></div></div>
+      </div>
+      <div class="status-row">
+        <span>Higiene 🛁</span>
+        <div class="status-bar-bg"><div id="bar-higiene" class="status-fill" style="width: 100%; background: #48dbfb;"></div></div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="pet-actions">
+        <button class="pet-btn" id="btn-alimentar">Dar Sachê 🐟</button>
+        <button class="pet-btn" id="btn-dormir">Colocar p/ Dormir 💤</button>
+        <button class="pet-btn" id="btn-brincar">Brincar 🐾</button>
+        <button class="pet-btn" id="btn-banho">Dar Banho 🧼</button>
+      </div>
+    </div>
+  </div>
   <script>
     // ---- Configuração Firebase ----
     const firebaseConfig = {
