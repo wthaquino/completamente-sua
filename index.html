@@ -765,6 +765,41 @@
     .pet-btn:active {
       transform: translateY(1px);
     }
+    /* =========================================
+       BALÃO DE FALA DO GATINHO
+       ========================================= */
+    .speech-bubble {
+      background: rgba(255, 255, 255, 0.95);
+      color: #8e1e5c;
+      padding: 12px 18px;
+      border-radius: 15px;
+      position: relative;
+      display: inline-block;
+      font-weight: 600;
+      font-size: 0.95em;
+      margin-bottom: 15px;
+      max-width: 85%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      animation: popBubble 0.3s ease-out;
+    }
+    
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
+      display: block;
+      width: 0;
+    }
+
+    @keyframes popBubble {
+      0% { transform: scale(0.8) translateY(10px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -946,6 +981,8 @@
       <button id="closePetBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
       
       <h3 style="margin-top: 0; color: white; font-family: 'Dancing Script', cursive; font-size: 2.2em;">Nosso Gatinho 🐾</h3>
+      <!-- O balão de fala entra bem aqui! -->
+      <div id="pet-speech" class="speech-bubble">Miau! Estava com saudades. 💕</div>
       
       <!-- Onde o gatinho aparece visualmente -->
       <div id="pet-display">🐈</div>
@@ -1788,6 +1825,127 @@
 
     // Assim que o código é lido, ele acorda o gatinho
     carregarPet();
+   
+   // =========================================
+    // MOTOR DO JOGO: LÓGICA DO TAMAGOTCHI + FALA
+    // =========================================
+    
+    let petStats = { fome: 100, energia: 100, diversao: 100, higiene: 100 };
+    
+    // A virada de chave! O grande dia do aniversário de 3 anos
+    const dataAniversario = new Date('2026-10-29T00:00:00'); 
+
+    // Dicionário de Frases do Gatinho
+    const frasesFelizes = [
+        "Amo quando vocês vêm me ver! 💕", 
+        "O amor de vocês me deixa com o coração quentinho.", 
+        "Vocês formam uma dupla melhor que Booth e Brennan! 🦴🕵️‍♂️💕",
+        "Miau! Como foi o dia hoje?"
+    ];
+    const frasesFome = ["Minha barriguinha tá roncando...", "Tem um sachê aí pra mim? 🐟", "Acho que vou desmaiar de fome 😿"];
+    const frasesSono = ["Zzz... Só mais 5 minutinhos...", "Tô piscando devagarzinho 🥱", "Preciso de um colinho pra dormir."];
+    const frasesTriste = ["Tô me sentindo tão sozinho 🧶", "Brinca comigo? Por favorzinho!", "Miau tristinho..."];
+    const frasesSujo = ["Eca, pisei na lama...", "Acho que preciso de um banho 🛁", "Tô fedidinho, miau."];
+
+    function atualizarFalaPet() {
+        const speech = document.getElementById('pet-speech');
+        if (!speech) return;
+
+        // Efeito de "pular" o balão
+        speech.style.animation = 'none';
+        setTimeout(() => speech.style.animation = 'popBubble 0.3s ease-out', 10);
+
+        if (petStats.fome < 30) {
+            speech.innerText = frasesFome[Math.floor(Math.random() * frasesFome.length)];
+        } else if (petStats.energia < 30) {
+            speech.innerText = frasesSono[Math.floor(Math.random() * frasesSono.length)];
+        } else if (petStats.diversao < 30) {
+            speech.innerText = frasesTriste[Math.floor(Math.random() * frasesTriste.length)];
+        } else if (petStats.higiene < 30) {
+            speech.innerText = frasesSujo[Math.floor(Math.random() * frasesSujo.length)];
+        } else {
+            speech.innerText = frasesFelizes[Math.floor(Math.random() * frasesFelizes.length)];
+        }
+    }
+
+    function carregarPet() {
+        const agora = new Date();
+        if (agora >= dataAniversario) {
+            // Em Outubro: Puxará do Firebase
+        } else {
+            // Agora: Puxa do navegador
+            const localData = localStorage.getItem('nossoGatinho');
+            if (localData) petStats = JSON.parse(localData);
+        }
+        atualizarBarrasPet();
+    }
+
+    function salvarPet() {
+        const agora = new Date();
+        if (agora >= dataAniversario) {
+            // Em Outubro: Salvará no Firebase
+        } else {
+            localStorage.setItem('nossoGatinho', JSON.stringify(petStats));
+        }
+    }
+
+    function atualizarBarrasPet() {
+        document.getElementById('bar-fome').style.width = petStats.fome + '%';
+        document.getElementById('bar-energia').style.width = petStats.energia + '%';
+        document.getElementById('bar-diversao').style.width = petStats.diversao + '%';
+        document.getElementById('bar-higiene').style.width = petStats.higiene + '%';
+        
+        const display = document.getElementById('pet-display');
+        if (petStats.fome < 30 || petStats.energia < 30 || petStats.diversao < 30 || petStats.higiene < 30) {
+            display.innerText = '😿';
+        } else {
+            display.innerText = '🐈';
+        }
+    }
+
+    // Ações dos Botões com respostas instantâneas no balão!
+    document.getElementById('btn-alimentar').onclick = () => { 
+        petStats.fome = Math.min(100, petStats.fome + 30); 
+        atualizarBarrasPet(); salvarPet(); 
+        document.getElementById('pet-speech').innerText = "Nhom nhom... Que delícia! 🐟";
+    };
+    
+    document.getElementById('btn-dormir').onclick = () => { 
+        petStats.energia = Math.min(100, petStats.energia + 40); 
+        atualizarBarrasPet(); salvarPet(); 
+        document.getElementById('pet-speech').innerText = "Boa noite... Sonhando com sachês 💤";
+    };
+    
+    document.getElementById('btn-brincar').onclick = () => { 
+        petStats.diversao = Math.min(100, petStats.diversao + 35); 
+        petStats.energia = Math.max(0, petStats.energia - 10); 
+        atualizarBarrasPet(); salvarPet(); 
+        document.getElementById('pet-speech').innerText = "Pega o ratinho! Pega! 🧶🐾";
+    };
+    
+    document.getElementById('btn-banho').onclick = () => { 
+        petStats.higiene = 100; 
+        atualizarBarrasPet(); salvarPet(); 
+        document.getElementById('pet-speech').innerText = "Tô limpinho e cheiroso de novo! 🛁✨";
+    };
+
+    // O "Coração" do Jogo: O tempo passando
+    setInterval(() => {
+        petStats.fome = Math.max(0, petStats.fome - 2);
+        petStats.energia = Math.max(0, petStats.energia - 1);
+        petStats.diversao = Math.max(0, petStats.diversao - 2);
+        petStats.higiene = Math.max(0, petStats.higiene - 1);
+        atualizarBarrasPet(); salvarPet();
+    }, 60000); 
+
+    // Assim que a tela carrega, ele acorda
+    carregarPet();
+
+    // Quando o botão do gatinho é clicado, ele atualiza a frase
+    document.getElementById('pet-fab').addEventListener('click', () => {
+        atualizarFalaPet();
+    }); 
+    
     // =========================================
     // ABRIR E FECHAR O TAMAGOTCHI (BLINDADO)
     // =========================================
