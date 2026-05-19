@@ -644,9 +644,9 @@
  /* =========================================
        SISTEMA TAMAGOTCHI (O GATINHO)
        ========================================= */
-    #pet-fab {
+   #pet-fab {
       position: fixed;
-      bottom: 110px; /* Fica um pouco acima do player do Spotify */
+      bottom: 120px; 
       right: 20px;
       width: 60px;
       height: 60px;
@@ -656,15 +656,16 @@
       border-radius: 50%;
       font-size: 2em;
       cursor: pointer;
-      z-index: 2000;
+      z-index: 99999; /* Garante que fique por cima de tudo */
       box-shadow: 0 4px 15px rgba(255, 92, 141, 0.5);
       display: flex;
       align-items: center;
       justify-content: center;
       transition: transform 0.3s ease, background 0.3s;
       animation: flutuarPet 3s ease-in-out infinite;
+      pointer-events: auto;
     }
-
+    
     #pet-fab:hover {
       transform: scale(1.1);
       background: rgba(255, 255, 255, 0.4);
@@ -1687,6 +1688,25 @@
             }
         });
     }
+    // =========================================
+    // ABRIR E FECHAR O TAMAGOTCHI (BLINDADO)
+    // =========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        const petFab = document.getElementById('pet-fab');
+        const petModal = document.getElementById('tamagotchi-modal');
+        const closePetBtn = document.getElementById('closePetBtn');
+        
+        if (petFab && petModal && closePetBtn) {
+            petFab.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                petModal.style.display = 'flex';
+            });
+            
+            closePetBtn.addEventListener('click', () => {
+                petModal.style.display = 'none';
+            });
+        }
+    });
   </script>
 </body>
 </html>
