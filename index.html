@@ -1263,10 +1263,20 @@
     document.getElementById('enterBtn').onclick = () => {
       introScreen.classList.add('fade-out'); 
       createHeartShower(); 
+      
       setTimeout(() => { 
         introScreen.style.display = 'none'; 
         mainContent.classList.remove('hidden'); 
-        spotifyPlayer.setAttribute('src', spotifyPlayer.getAttribute('data-src')); 
+        
+        // Pega o nosso novo player de áudio
+        const audioPlayer = document.getElementById('spotify-player');
+        
+        // Dá o comando de "Play" assim que ela entra na página
+        if (audioPlayer) {
+            audioPlayer.volume = 0.5; // Começa em 50% de volume para ser suave
+            audioPlayer.play().catch(e => console.log("O navegador pediu para dar play manualmente."));
+        }
+        
         loadPhotos(); 
       }, 1000);
     };
