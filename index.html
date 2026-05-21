@@ -853,6 +853,7 @@
       <h1>Nosso Cantinho 💕</h1>
       <div class="header-buttons">
         <button id="openMapBtn">Explorar Mapa 🌍</button>
+        <button id="openRoletaBtn" style="background: #ff9f43; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: auto;">Roleta da Noite 🎰</button>
         <button id="editBtn">Modo Edição</button>
       </div>
     </header>
@@ -1021,6 +1022,19 @@
        <h2 style="margin-top: 0; color: #8e1e5c; font-family: 'Dancing Script', cursive; font-size: 2.5em;">Surpresa! 💌</h2>
        <p id="gift-message" style="color: #333; font-weight: bold; font-size: 1.1em;"></p>
        <button id="closeGiftBtn" style="margin-top: 20px; background: #ff5c8d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Guardar no coração 💕</button>
+    </div>
+  </div>
+  <!-- Modal da Roleta do Encontro -->
+  <div id="roleta-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3300; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="background: linear-gradient(to bottom right, #fff, #ffeef6); padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative;">
+       <button id="closeRoletaBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #8e1e5c; font-size: 2em; cursor: pointer;">&times;</button>
+       <h2 style="margin-top: 0; color: #8e1e5c; font-family: 'Dancing Script', cursive; font-size: 2.5em;">Combo da Noite 🎰</h2>
+       
+       <div id="roleta-resultado" style="font-size: 1.1em; color: #333; margin: 20px 0; min-height: 120px; display: flex; flex-direction: column; justify-content: center; gap: 10px; background: rgba(255, 92, 141, 0.1); padding: 15px; border-radius: 15px; border: 1px dashed #ff5c8d;">
+          <span style="color: #666; font-style: italic;">Clique no botão abaixo para sortear o nosso encontro perfeito!</span>
+       </div>
+       
+       <button id="btn-girar-roleta" style="background: #ff9f43; color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1em; width: 100%; box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);">Girar Roleta 🎲</button>
     </div>
   </div>
   <script>
@@ -1887,7 +1901,57 @@
     document.getElementById('pet-fab').addEventListener('click', () => {
         atualizarFalaPet();
     });
+// =========================================
+    // ROLETA DO ENCONTRO (SORTEIO 3 EM 1)
+    // =========================================
+    const roletaModal = document.getElementById('roleta-modal');
+    const openRoletaBtn = document.getElementById('openRoletaBtn');
+    const closeRoletaBtn = document.getElementById('closeRoletaBtn');
+    const btnGirar = document.getElementById('btn-girar-roleta');
+    const roletaResultado = document.getElementById('roleta-resultado');
 
+    // Nossas Listas Fixas de Sorteio
+    const listaComidas = ["Pizza de Borda Recheada 🍕", "Rodada de Esfirras 🥟", "Suflê Quentinho 🍮", "Delivery Especial 🥡", "Massa Fresquinha 🍝"];
+    const listaTelas = ["Maratona de Bones 🦴", "Filme de Terror 👻", "Vídeos Engraçados 😂", "Série Nova 🍿"];
+    const listaAtividades = ["Cafuné até dormir 🐈", "Tentar resolver o Cubo Mágico 🧊", "Planejar a ida pra Rio Preto 🛣️", "Dormir agarradinho 💤"];
+
+    // Abrir e Fechar a Janela
+    if (openRoletaBtn && roletaModal && closeRoletaBtn) {
+        openRoletaBtn.addEventListener('click', () => {
+            roletaModal.style.display = 'flex';
+            roletaResultado.innerHTML = '<span style="color: #666; font-style: italic;">Clique no botão abaixo para sortear o nosso encontro perfeito!</span>';
+        });
+        closeRoletaBtn.addEventListener('click', () => {
+            roletaModal.style.display = 'none';
+        });
+    }
+
+    // A Mágica do Sorteio
+    if (btnGirar) {
+        btnGirar.addEventListener('click', () => {
+            // Efeito de girando
+            btnGirar.disabled = true;
+            btnGirar.innerText = "Girando... 🔄";
+            roletaResultado.innerHTML = '<span style="font-weight: bold; font-size: 2em; animation: pulse 0.5s infinite;">🎰 🎰 🎰</span>';
+
+            // Espera 1,5 segundos para fazer suspense e depois sorteia
+            setTimeout(() => {
+                const comidaSorteada = listaComidas[Math.floor(Math.random() * listaComidas.length)];
+                const telaSorteada = listaTelas[Math.floor(Math.random() * listaTelas.length)];
+                const atividadeSorteada = listaAtividades[Math.floor(Math.random() * listaAtividades.length)];
+                
+                roletaResultado.innerHTML = `
+                    <div style="font-weight: bold;">🍽️ ${comidaSorteada}</div>
+                    <div style="font-weight: bold;">📺 ${telaSorteada}</div>
+                    <div style="font-weight: bold;">🐾 ${atividadeSorteada}</div>
+                `;
+                
+                btnGirar.disabled = false;
+                btnGirar.innerText = "Girar de Novo 🎲";
+                createHeartShower(); // Aproveita a chuva de corações que já existe no site!
+            }, 1500);
+        });
+    }
     // =========================================
     // ABRIR E FECHAR O TAMAGOTCHI (BLINDADO)
     // =========================================
