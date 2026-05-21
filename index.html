@@ -1083,6 +1083,37 @@
        <button id="btn-girar-roleta" style="background: #ff9f43; color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1em; width: 100%; box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);">Girar Roleta 🎲</button>
     </div>
   </div>
+  <!-- =========================================
+       EASTER EGG: DIÁRIO SECRETO DO GATINHO
+       ========================================= -->
+  <div id="cat-diary-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div style="background: #fff; color: #333; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; font-family: 'Courier New', Courier, monospace; box-shadow: 0 10px 30px rgba(255, 92, 141, 0.5);">
+      <button id="closeDiaryBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #8e1e5c; font-size: 2em; cursor: pointer; font-weight: bold;">&times;</button>
+      <h2 style="text-align: center; color: #8e1e5c; border-bottom: 2px dashed #ffbcda; padding-bottom: 10px; font-family: 'Dancing Script', cursive; font-size: 2.5em; margin-top: 0;">🐾 Diário de um Felino 🐾</h2>
+      
+      <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+        
+        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
+          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 01 - O Mistério da Borda Recheada</strong><br>
+          <em style="font-size: 0.9em; color: #666;">Data: O dia em que eu quase roubei mussarela.</em><br><br>
+          Elas acham que eu não sei, mas eu vejo tudo. Hoje foi dia de sovar massa. Fiquei rondando a cozinha com a minha melhor cara de coitado esperando um pedaço cair, mas nada. Pelo menos depois fomos pro sofá assistir Bones. Aquele cara, o Booth, não me engana. Mas um colo é um colo, né?
+        </div>
+
+        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
+          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 02 - A Grande Viagem</strong><br>
+          <em style="font-size: 0.9em; color: #666;">Data: Antes de pegar a estrada.</em><br><br>
+          Escutei elas falando sobre ir visitar a família em São José do Rio Preto de novo. Começaram a fazer as contas e olhar os carros... Só espero que elas lembrem de deixar meu estoque de sachê em dia se forem demorar!
+        </div>
+
+        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
+          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 03 - Investigação Forense</strong><br>
+          <em style="font-size: 0.9em; color: #666;">Data: Madrugada adentro.</em><br><br>
+          Passaram horas olhando pro Cubo Mágico. Tentei dar uma patada pra ajudar a montar a tal da "cruz branca", mas fui repreendido. Humanos não entendem o meu método avançado de resolução (que consiste em jogar o cubo no chão da sala).
+        </div>
+
+      </div>
+    </div>
+  </div>
   <script>
     // ---- Configuração Firebase ----
     const firebaseConfig = {
@@ -2017,6 +2048,42 @@
             });
         }
     });
+    // =========================================
+    // LÓGICA DO EASTER EGG (5 CLIQUES NO GATO)
+    // =========================================
+    const catFaceDisplay = document.getElementById('pet-display');
+    const catDiaryModal = document.getElementById('cat-diary-modal');
+    const closeDiaryBtn = document.getElementById('closeDiaryBtn');
+
+    let clickCount = 0;
+    let clickTimer;
+
+    if (catFaceDisplay && catDiaryModal && closeDiaryBtn) {
+        
+        catFaceDisplay.addEventListener('click', (e) => {
+            e.stopPropagation(); // Impede que o clique faça outra coisa sem querer
+            clickCount++;
+
+            // Se for o primeiro clique, liga o cronômetro (2 segundos para dar 5 cliques)
+            if (clickCount === 1) {
+                clickTimer = setTimeout(() => {
+                    clickCount = 0; // Se demorar muito, zera o contador
+                }, 2000);
+            }
+
+            // Se chegar a 5 cliques antes do tempo acabar... BINGO!
+            if (clickCount >= 5) {
+                clearTimeout(clickTimer); // Para o cronômetro
+                clickCount = 0; // Zera para a próxima vez
+                catDiaryModal.style.display = 'flex'; // Mostra o Diário!
+            }
+        });
+
+        // Fechar o diário
+        closeDiaryBtn.addEventListener('click', () => {
+            catDiaryModal.style.display = 'none';
+        });
+    }
   </script>
 </body>
 </html>
