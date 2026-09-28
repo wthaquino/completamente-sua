@@ -1,0 +1,1007 @@
+/* ==================================================================
+   NOSSO CANTINHO — ESTILOS
+   ------------------------------------------------------------------
+    1. Variáveis (cores, sombras)      9. Lightbox
+    2. Base                           10. Paginação
+    3. Botões e campos                11. Mapa e enigmas
+    4. Tela de introdução             12. Tamagotchi
+    5. Cabeçalho                      13. Roleta, presente, diário
+    6. Filtros da galeria             14. Flutuantes (toast, música, gato)
+    7. Cards de foto + cápsula        15. Animações
+    8. Modais + painel de edição      16. Celular e tablet
+   ================================================================== */
+
+
+/* ==================================================================
+   1. VARIÁVEIS — mude as cores do site todo aqui
+   ================================================================== */
+:root {
+  --rosa:          #ff5c8d;
+  --rosa-hover:    #e64c7c;
+  --rosa-claro:    #ffbcda;
+  --rosa-texto:    #ffeef6;
+  --vinho:         #8e1e5c;
+  --vinho-medio:   #b33c6a;
+  --malva:         #d86ca3;
+  --malva-hover:   #b85488;
+  --laranja:       #ff9f43;
+  --vermelho:      #ff3b3b;
+  --dourado:       #ffd700;
+
+  --fundo-degrade: linear-gradient(to bottom right, #8e1e5c, #d86ca3);
+  --vidro:         rgba(255, 255, 255, 0.15);
+  --vidro-borda:   rgba(255, 255, 255, 0.2);
+  --sombra:        0 15px 35px rgba(0, 0, 0, 0.35);
+
+  --fonte-titulo:  "Dancing Script", cursive;
+  --fonte-texto:   "Quicksand", sans-serif;
+
+  /* Espaço das barras do iPhone (notch / barra inferior) */
+  --safe-bottom:   env(safe-area-inset-bottom, 0px);
+}
+
+
+/* ==================================================================
+   2. BASE
+   ================================================================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--fonte-texto);
+  color: #fff;
+  text-align: center;
+  background: var(--fundo-degrade);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 2.8em;
+  color: #fff;
+}
+
+img { max-width: 100%; }
+
+.hidden { display: none !important; }
+.muted  { color: #ddd; font-size: 0.9em; }
+.hint   { margin: 4px 0 10px; font-size: 0.8em; opacity: 0.8; }
+
+
+/* ==================================================================
+   3. BOTÕES E CAMPOS (reutilizáveis)
+   ================================================================== */
+.btn {
+  display: inline-block;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--fonte-texto);
+  font-size: 1em;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, background 0.3s, opacity 0.2s;
+}
+.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.btn-primary { background: var(--rosa); }
+.btn-map     { background: var(--malva); }
+.btn-orange  { background: var(--laranja); }
+.btn-danger  { background: var(--vermelho); }
+.btn-muted   { background: #666; }
+.btn-gift    {
+  display: block;
+  margin: -5px auto 15px;
+  padding: 8px 15px;
+  background: var(--dourado);
+  color: var(--vinho);
+  box-shadow: 0 4px 10px rgba(255, 215, 0, 0.5);
+  animation: respirar 1.5s infinite alternate;
+}
+
+.btn-block { display: block; width: 100%; margin-top: 12px; }
+.btn-small { padding: 6px 14px; font-size: 0.85em; }
+.btn-big   { padding: 15px 25px; font-size: 1.1em; }
+
+.btn-link {
+  margin-top: 14px;
+  background: transparent;
+  border: none;
+  color: var(--rosa-claro);
+  text-decoration: underline;
+  font-family: var(--fonte-texto);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.btn-link--light { color: #fff; }
+
+@media (hover: hover) {
+  .btn-primary:hover { background: var(--rosa-hover);  transform: translateY(-2px); }
+  .btn-map:hover     { background: var(--malva-hover); transform: translateY(-2px); }
+  .btn-orange:hover  { transform: translateY(-2px); }
+}
+
+/* Campos de texto — font-size 16px evita o zoom automático no iPhone */
+.input {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--rosa-claro);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #333;
+  font-family: var(--fonte-texto);
+  font-size: 16px;
+}
+.input-center { text-align: center; margin: 20px 0 5px; }
+.input-file   { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+
+.input-label {
+  display: block;
+  margin: 15px 0 0;
+  text-align: left;
+  font-size: 0.9em;
+  font-weight: 700;
+  color: #fff;
+}
+
+.input-row { display: flex; gap: 10px; }
+.input-row > * { flex: 1; }
+.input-row > .btn-muted { flex: 0 0 35%; margin-top: 12px; }
+
+
+/* ==================================================================
+   4. TELA DE INTRODUÇÃO
+   ================================================================== */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--fundo-degrade);
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1s ease;
+}
+#intro-screen.fade-out { opacity: 0; pointer-events: none; }
+
+.intro-quote {
+  max-width: 600px;
+  margin-top: 20px;
+  font-size: 1.2em;
+  font-style: italic;
+  color: var(--rosa-texto);
+  opacity: 0.9;
+  animation: fadeInUp 3s ease;
+}
+
+.intro-buttons { margin-top: 40px; }
+
+/* Coração pulsante feito só com CSS */
+.heart {
+  position: relative;
+  width: 100px;
+  height: 90px;
+  margin-bottom: 40px;
+  background: var(--rosa);
+  transform: rotate(-45deg);
+  animation: pulse 1.2s infinite;
+}
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 90px;
+  background: var(--rosa);
+  border-radius: 50%;
+}
+.heart::before { top: -50px; left: 0; }
+.heart::after  { top: 0;     left: 50px; }
+
+
+/* ==================================================================
+   5. CABEÇALHO
+   ================================================================== */
+.site-header {
+  position: relative;
+  z-index: 10;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 0 15px rgba(255, 182, 193, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+
+/* ==================================================================
+   6. FILTROS DA GALERIA  [📷 FOTOS]
+   ================================================================== */
+#gallery-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 90%;
+  max-width: 900px;
+  margin: 25px auto 5px;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  background: var(--vidro);
+  color: #fff;
+  font-family: var(--fonte-texto);
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s;
+}
+.control-btn.active {
+  background: var(--rosa);
+  border-color: var(--rosa);
+  box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4);
+}
+.control-divider { width: 1px; margin: 0 5px; background: rgba(255, 255, 255, 0.3); }
+
+@media (hover: hover) {
+  .control-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+}
+
+
+/* ==================================================================
+   7. CARDS DE FOTO + CÁPSULA DO TEMPO  [📷 FOTOS]
+   ================================================================== */
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 90%;
+  max-width: 900px;
+  min-height: 50vh;
+  margin: 20px auto 30px;
+  padding: 10px;
+}
+
+.gallery-empty {
+  grid-column: 1 / -1;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--vidro-borda);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  animation: fadeInScale 0.6s ease forwards;
+  transition: transform 0.4s ease, box-shadow 0.3s ease;
+}
+@media (hover: hover) {
+  .photo:hover {
+    transform: scale(1.03) translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.caption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 25px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95em;
+  font-weight: 600;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+}
+.caption-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+/* [🎵 MÚSICA] ícone do link do Spotify no card */
+.music-link-icon { text-decoration: none; font-size: 1.2em; }
+
+/* Curtidas */
+.like-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--vidro);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.like-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.like-btn.pop { animation: popHeart 0.3s ease; }
+.like-count   { font-weight: 700; font-size: 0.95em; }
+
+/* Cápsula do tempo (foto trancada) — a imagem já vem borrada do Cloudinary */
+.photo.locked img {
+  filter: blur(8px) grayscale(40%);
+  transform: scale(1.1);
+  cursor: not-allowed;
+}
+.photo.locked .caption { font-style: italic; color: var(--rosa-claro); background: rgba(0, 0, 0, 0.9); }
+.photo.locked.no-preview { background: var(--fundo-degrade); }
+
+.lock-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  font-size: 4em;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* Botões de apagar/editar no card (só no modo edição) */
+.card-admin-btn {
+  position: absolute;
+  top: 10px;
+  z-index: 10;
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.card-admin-btn.delete { right: 10px; background: var(--vermelho);   color: #fff;          font-size: 1.4em; font-weight: 700; }
+.card-admin-btn.edit   { right: 56px; background: var(--rosa-claro); color: var(--vinho); font-size: 1.1em; }
+
+body.edit-mode .card-admin-btn { display: block; }
+
+
+/* ==================================================================
+   8. MODAIS + PAINEL DE EDIÇÃO
+   ================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.modal-overlay.open   { display: flex; }
+.modal-overlay--dark  { background: rgba(0, 0, 0, 0.92); z-index: 3000; }
+.modal-overlay--top   { z-index: 4000; }
+
+.modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 30px;
+  border-radius: 20px;
+  background: var(--vidro);
+  border: 1px solid var(--vidro-borda);
+  box-shadow: var(--sombra);
+  animation: fadeInUp 0.3s ease;
+}
+.modal-box--wide   { max-width: 450px; }
+.modal-box--narrow { max-width: 320px; }
+.modal-box--light  { background: linear-gradient(to bottom right, #fff, #ffeef6); color: #333; }
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  z-index: 5;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 1.9em;
+  line-height: 1;
+  cursor: pointer;
+}
+.modal-close--dark { color: var(--vinho); }
+.modal-close--big  { position: fixed; top: 16px; right: 22px; font-size: 2.5em; }
+
+.modal-title {
+  margin-top: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 2.2em;
+  color: #fff;
+}
+.modal-title--dark { color: var(--vinho); font-size: 2.5em; }
+.modal-heading     { margin-top: 0; }
+
+.glass-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 20px;
+  background: var(--vidro);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: var(--sombra);
+}
+
+/* Painel de edição (fim da página) */
+#editor {
+  width: 90%;
+  max-width: 450px;
+  margin: 30px auto;
+  padding: 30px;
+  border-radius: 15px;
+  background: var(--vidro);
+  border: 1px solid var(--vidro-borda);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+}
+.editor-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+.editor-title    { margin-top: 0; }
+.editor-subtitle { color: var(--rosa-claro); margin-bottom: 10px; }
+.editor-divider  { margin: 30px 0; border: 0; border-top: 1px solid var(--rosa-claro); }
+
+.pin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+.pin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 0.9em;
+}
+.pin-item button {
+  margin-left: 5px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pin-item .pin-edit   { background: var(--rosa-claro); color: var(--vinho); }
+.pin-item .pin-delete { background: var(--vermelho); color: #fff; }
+
+footer {
+  margin: 50px 0 30px;
+  padding-bottom: 60px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+
+/* ==================================================================
+   9. LIGHTBOX  [📷 FOTOS]
+   ================================================================== */
+.lightbox-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+}
+
+#lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: 78vh;
+  max-height: 78dvh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+#lightbox-caption {
+  max-width: 100%;
+  margin-top: 15px;
+  font-size: 1.2em;
+  overflow-wrap: anywhere;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+}
+
+.close-lightbox {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 40px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid var(--vidro-borda);
+  background: var(--vidro);
+  backdrop-filter: blur(5px);
+  color: #fff;
+  font-size: 1.8em;
+  cursor: pointer;
+}
+.lightbox-nav:disabled { opacity: 0.25; cursor: default; }
+#lightbox-prev { left: -64px; }
+#lightbox-next { right: -64px; }
+
+/* [🎵 MÚSICA] botão "Ouvir música" */
+.lightbox-music-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: var(--rosa);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+
+/* ==================================================================
+   10. PAGINAÇÃO  [📷 FOTOS]
+   ================================================================== */
+#pagination-controls { margin: 30px 0; }
+
+.page-btn,
+.nav-btn {
+  margin: 4px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--rosa);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.page-btn.active  { background: var(--vinho-medio); cursor: default; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
+.nav-btn:disabled { background: #aaa; cursor: not-allowed; box-shadow: none; }
+
+
+/* ==================================================================
+   11. MAPA E ENIGMAS
+   ================================================================== */
+.map-title {
+  margin: 0 0 10px;
+  font-family: var(--fonte-titulo);
+  font-size: 3em;
+}
+
+/* Permite arrastar o mapa para os lados no celular */
+.map-scroll {
+  width: 100%;
+  max-width: 1000px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 0 20px rgba(255, 92, 141, 0.5));
+}
+.map-container.picking { cursor: crosshair; }
+
+.map-pin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--rosa);
+  box-shadow: 0 0 15px var(--rosa);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+.map-pin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--rosa);
+  animation: pulseMap 1.5s infinite;
+}
+.map-pin--preview { background: var(--dourado); box-shadow: 0 0 15px var(--dourado); pointer-events: none; }
+
+#enigma-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3005;
+  width: 90%;
+  transform: translate(-50%, -50%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: rgba(60, 12, 40, 0.92);   /* mais opaco: o título do mapa não "vaza" */
+}
+.enigma-title    { margin-top: 0; color: var(--rosa-claro); }
+.enigma-question { font-size: 1.1em; font-weight: 700; }
+.enigma-feedback { min-height: 1.2em; margin: 6px 0 0; color: var(--rosa-claro); font-weight: 600; }
+.enigma-reward   { margin-top: 10px; border-radius: 12px; max-height: 50vh; object-fit: contain; }
+
+.shake { animation: shake 0.4s; }
+
+
+/* ==================================================================
+   12. TAMAGOTCHI (O GATINHO)
+   ================================================================== */
+.tamagotchi-container { max-width: 350px; }
+
+#pet-display {
+  margin: 10px 0 20px;
+  font-size: 5em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  animation: respirar 2s infinite alternate;
+  cursor: pointer;
+  user-select: none;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 0.9em;
+}
+.status-bar-bg {
+  width: 62%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--vidro-borda);
+}
+.status-fill { width: 100%; height: 100%; border-radius: 10px; transition: width 0.5s ease-out; }
+.fill-fome     { background: #ff9f43; }
+.fill-energia  { background: #feca57; }
+.fill-diversao { background: #ff5c8d; }
+.fill-higiene  { background: #48dbfb; }
+
+.pet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 25px;
+}
+.pet-btn {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 188, 218, 0.5);
+  background: rgba(255, 92, 141, 0.8);
+  color: #fff;
+  font-family: var(--fonte-texto);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pet-btn:active { transform: translateY(1px); }
+@media (hover: hover) {
+  .pet-btn:hover { background: var(--rosa-hover); transform: translateY(-2px); }
+}
+
+.speech-bubble {
+  position: relative;
+  display: inline-block;
+  max-width: 85%;
+  margin-bottom: 15px;
+  padding: 12px 18px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--vinho);
+  font-weight: 600;
+  font-size: 0.95em;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: popBubble 0.3s ease-out;
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.95) transparent transparent;
+}
+
+
+/* ==================================================================
+   13. ROLETA, PRESENTE E DIÁRIO
+   ================================================================== */
+.roleta-resultado {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px dashed var(--rosa);
+  background: rgba(255, 92, 141, 0.1);
+  font-size: 1.1em;
+  color: #333;
+}
+.roleta-resultado .placeholder { color: #666; font-style: italic; }
+.roleta-resultado .item        { font-weight: 700; }
+.roleta-resultado .spinning    { font-size: 2em; font-weight: 700; animation: pulseSimples 0.5s infinite; }
+
+.gift-message { color: #333; font-weight: 700; font-size: 1.1em; }
+
+.diary-box {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow-y: auto;
+  padding: 30px;
+  border-radius: 15px;
+  background: #fff;
+  color: #333;
+  font-family: 'Courier New', Courier, monospace;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(255, 92, 141, 0.5);
+}
+.diary-title {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed var(--rosa-claro);
+  text-align: center;
+  font-family: var(--fonte-titulo);
+  font-size: 2.5em;
+  color: var(--vinho);
+}
+.diary-entries { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+.diary-entry {
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 5px solid var(--rosa);
+  background: #ffeef6;
+}
+.diary-entry strong { display: block; color: var(--vinho); font-size: 1.1em; }
+.diary-entry em     { display: block; margin-top: 4px; font-size: 0.9em; color: #666; }
+.diary-entry p      { margin: 12px 0 0; }
+
+
+/* ==================================================================
+   14. FLUTUANTES: TOAST, PLAYER DE MÚSICA, BOTÃO DO GATO
+   ================================================================== */
+#toast {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: calc(30px + var(--safe-bottom));
+  z-index: 6000;              /* acima de todos os modais */
+  transform: translateX(-50%);
+  max-width: 90vw;
+  padding: 15px 35px;
+  border-radius: 50px;
+  background: #fff;
+  color: var(--vinho);
+  font-weight: 700;
+  font-size: 1.1em;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+#toast.show { display: block; animation: popBubble 0.25s ease-out; }
+
+/* [🎵 MÚSICA] player de fundo */
+#music-player {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + var(--safe-bottom));
+  z-index: 999;
+  width: 250px;
+  height: 40px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+#pet-fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(120px + var(--safe-bottom));
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--rosa-claro);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  font-size: 2em;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 92, 141, 0.5);
+  animation: flutuarPet 3s ease-in-out infinite;
+}
+
+/* Gato e player só aparecem depois de entrar */
+body.intro #pet-fab,
+body.intro #music-player { display: none; }
+
+/* Chuva de corações */
+.floating-heart {
+  position: fixed;
+  bottom: -10vh;
+  z-index: 5000;
+  font-size: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  animation: floatUp ease-in forwards;
+}
+
+
+/* ==================================================================
+   15. ANIMAÇÕES
+   ================================================================== */
+@keyframes pulse        { 0%, 100% { transform: scale(1) rotate(-45deg); } 50% { transform: scale(1.1) rotate(-45deg); } }
+@keyframes pulseSimples { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes fadeInUp     { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInScale  { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes popHeart     { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.6); } }
+@keyframes pulseMap     { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+@keyframes flutuarPet   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes respirar     { from { transform: scale(1); } to { transform: scale(1.05); } }
+@keyframes popBubble    { 0% { transform: scale(0.8) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+@keyframes shake        { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(0.5) rotate(0deg);        opacity: 1; }
+  100% { transform: translateY(-120vh) scale(1.5) rotate(360deg); opacity: 0; }
+}
+
+/* Quem pediu menos movimento no sistema não recebe animações contínuas */
+@media (prefers-reduced-motion: reduce) {
+  .heart, #pet-fab, #pet-display, .btn-gift, .map-pin::after { animation: none; }
+}
+
+
+/* ==================================================================
+   16. CELULAR E TABLET
+   ================================================================== */
+
+/* Tablets */
+@media (max-width: 800px) {
+  #lightbox-prev { left: 8px; }
+  #lightbox-next { right: 8px; }
+  .lightbox-nav  { width: 42px; height: 42px; font-size: 1.4em; background: rgba(0, 0, 0, 0.35); }
+  .lightbox-content { max-width: 100%; }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+  body { background-attachment: scroll; }   /* "fixed" trava/pesa no iPhone */
+
+  h1         { font-size: 2.2em; }
+  .map-title { font-size: 2.2em; margin-top: 30px; }
+
+  .site-header           { padding: 20px 12px; }
+  .header-buttons .btn   { flex: 1 1 45%; padding: 10px 6px; font-size: 0.9em; }
+
+  #gallery-controls      { width: 95%; gap: 8px; }
+  .control-btn           { flex: 1 1 auto; padding: 8px 10px; font-size: 0.85em; }
+  .control-divider       { display: none; }
+
+  #gallery { grid-template-columns: 1fr; width: 95%; gap: 22px; margin-top: 10px; }
+
+  /* Player centralizado embaixo; gatinho logo acima, à direita */
+  #music-player {
+    right: 50%;
+    bottom: calc(10px + var(--safe-bottom));
+    transform: translateX(50%);
+    width: 95%;
+    max-width: 350px;
+    height: 45px;
+  }
+  #pet-fab { right: 15px; bottom: calc(70px + var(--safe-bottom)); width: 55px; height: 55px; font-size: 1.8em; }
+  #toast   { bottom: calc(135px + var(--safe-bottom)); width: 85%; padding: 12px 20px; font-size: 0.95em; }
+
+  .modal-box, .glass-card, #editor { padding: 22px; }
+  #editor  { width: 95%; }
+
+  /* Mapa mais largo que a tela: arraste para os lados */
+  .map-container { width: 720px; }
+  #enigma-modal  { position: fixed; }
+
+  footer { padding-bottom: 120px; }
+}

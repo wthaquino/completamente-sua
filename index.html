@@ -1,1059 +1,220 @@
 <!DOCTYPE html>
+<!--
+  NOSSO CANTINHO 💕
+  ─────────────────────────────────────────────────────────────
+  Estrutura do projeto:
+    index.html        → só a marcação (HTML) da página
+    css/style.css     → todo o visual (inclui celular/tablet no final)
+    js/config.js      → [🔥 FIREBASE] [☁️ CLOUDINARY] [🎵 MÚSICA] chaves e URLs
+    js/utils.js       → funções de apoio usadas por todos
+    js/music.js       → [🎵 MÚSICA] player de fundo
+    js/gallery.js     → [📷 FOTOS] galeria, filtros, lightbox, curtidas
+    js/admin.js       → login, upload, edição e exclusão de lembranças
+    js/background.js  → fundo da página
+    js/map.js         → mapa e enigmas
+    js/pet.js         → gatinho (Tamagotchi) + presentes + diário secreto
+    js/roleta.js      → roleta da noite
+    js/main.js        → liga tudo (botão "Entrar" e inicialização)
+    firestore.rules   → regras de segurança para colar no console do Firebase
+-->
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#8e1e5c">
   <title>Nosso Cantinho 💕</title>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-  
-  <style>
-    /* =========================================
-       ESTILOS GLOBAIS E BACKGROUND
-       ========================================= */
-    body {
-      font-family: "Quicksand", sans-serif;
-      background: linear-gradient(to bottom right, #8e1e5c, #d86ca3);
-      margin: 0;
-      color: #fff;
-      text-align: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-    }
 
-    /* =========================================
-       TELA DE INTRODUÇÃO
-       ========================================= */
-    #intro-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom right, #8e1e5c, #d86ca3);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      transition: opacity 1s ease;
-      text-align: center;
-      padding: 0 20px;
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-    }
-
-    #intro-screen.fade-out { 
-      opacity: 0; 
-      pointer-events: none; 
-    }
-
-    .intro-quote {
-      max-width: 600px;
-      font-size: 1.2em;
-      font-style: italic;
-      color: #ffeef6;
-      margin-top: 20px;
-      animation: fadeInUp 3s ease;
-      opacity: 0.9;
-    }
-
-    .intro-buttons {
-      margin-top: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    #musicBtn, #enterBtn {
-      background: #ff5c8d;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 8px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    #musicBtn:hover, #enterBtn:hover { 
-      background: #e64c7c; 
-    }
-
-    /* Animação do Coração na Intro */
-    .heart {
-      position: relative;
-      width: 100px;
-      height: 90px;
-      background: #ff5c8d;
-      transform: rotate(-45deg);
-      animation: pulse 1.2s infinite;
-    }
-
-    .heart::before, .heart::after {
-      content: "";
-      position: absolute;
-      width: 100px;
-      height: 90px;
-      background: #ff5c8d;
-      border-radius: 50%;
-    }
-
-    .heart::before { top: -50px; left: 0; }
-    .heart::after { left: 50px; top: 0; }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1) rotate(-45deg); }
-      50% { transform: scale(1.1) rotate(-45deg); }
-    }
-
-    /* =========================================
-       CABEÇALHO DA PÁGINA (HEADER)
-       ========================================= */
-    header {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding: 25px;
-      box-shadow: 0 0 15px rgba(255, 182, 193, 0.3);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      position: relative;
-      z-index: 9999;
-      pointer-events: auto;
-    }
-
-    h1 {
-      font-family: "Dancing Script", cursive;
-      font-size: 2.8em;
-      color: #fff;
-      margin: 0;
-    }
-    
-    .header-buttons {
-      display: flex; 
-      justify-content: center;
-      gap: 10px; 
-      margin-top: 15px;
-      position: relative; 
-      z-index: 10000;
-    }
-
-    #editBtn, #openMapBtn {
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: #fff;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      pointer-events: auto;
-      transition: transform 0.2s, background 0.3s;
-    }
-
-    #editBtn { background: #ff5c8d; }
-    #editBtn:hover { background: #e64c7c; transform: translateY(-2px); }
-
-    #openMapBtn { background: #d86ca3; }
-    #openMapBtn:hover { background: #b85488; transform: translateY(-2px); }
-
-    /* =========================================
-       FILTROS E ORDENAÇÃO DA GALERIA
-       ========================================= */
-    #gallery-controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 25px auto 5px auto;
-      flex-wrap: wrap;
-      width: 90%;
-      max-width: 900px;
-    }
-
-    .control-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 600;
-      backdrop-filter: blur(5px);
-      transition: all 0.3s;
-      font-family: "Quicksand", sans-serif;
-    }
-
-    .control-btn:hover { background: rgba(255, 255, 255, 0.3); }
-    .control-btn.active { background: #ff5c8d; border-color: #ff5c8d; box-shadow: 0 4px 10px rgba(255, 92, 141, 0.4); }
-    .control-divider { width: 1px; background: rgba(255,255,255,0.3); margin: 0 5px; }
-
-    /* =========================================
-       GRADE DE FOTOS (GALERIA)
-       ========================================= */
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px; 
-      width: 90%; 
-      max-width: 900px; 
-      margin: 20px auto 30px auto; 
-      padding: 10px;
-      box-sizing: border-box;
-      min-height: 50vh;
-    }
-
-    .photo {
-      position: relative; 
-      width: 100%;
-      aspect-ratio: 1 / 1; 
-      border-radius: 15px; 
-      overflow: hidden; 
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      transition: transform 0.4s ease, box-shadow 0.3s ease;
-      opacity: 0;
-      animation: fadeInScale 0.6s ease forwards;
-    }
-
-    .photo:hover {
-      transform: scale(1.03) translateY(-5px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-    }
-
-    .photo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; 
-      display: block;
-      cursor: pointer;
-      transition: transform 0.4s ease;
-    }
-
-    /* Legendas das Fotos */
-    .caption {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      font-size: 0.95em;
-      color: #fff;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-      padding: 25px 10px 12px;
-      box-sizing: border-box;
-      font-weight: 600;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .caption-content { 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8px; 
-    }
-
-    /* =========================================
-       SISTEMA DE CURTIDAS (LIKES)
-       ========================================= */
-    .like-container {
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 5px;
-      background: rgba(255, 255, 255, 0.15); 
-      padding: 4px 12px; 
-      border-radius: 20px;
-      backdrop-filter: blur(5px); 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .like-btn { 
-      background: none; 
-      border: none; 
-      cursor: pointer; 
-      font-size: 1.2em; 
-      padding: 0; 
-      transition: transform 0.2s; 
-    }
-
-    .like-btn:hover { transform: scale(1.2); }
-    .like-btn.pop { animation: popHeart 0.3s ease; }
-    
-    @keyframes popHeart { 
-      0% { transform: scale(1); } 
-      50% { transform: scale(1.6); } 
-      100% { transform: scale(1); } 
-    }
-
-    .like-count { font-weight: bold; font-size: 0.95em; }
-
-    /* =========================================
-       CÁPSULA DO TEMPO (FOTOS BLOQUEADAS)
-       ========================================= */
-    .photo.locked img { 
-      filter: blur(15px) grayscale(40%); 
-      transform: scale(1.1); 
-      cursor: not-allowed; 
-    }
-
-    .photo.locked:hover img { transform: scale(1.1); }
-    
-    .lock-icon { 
-      position: absolute; 
-      top: 50%; 
-      left: 50%; 
-      transform: translate(-50%, -50%); 
-      font-size: 4em; 
-      z-index: 5; 
-      text-shadow: 0 0 20px rgba(0,0,0,0.8); 
-      pointer-events: none; 
-    }
-
-    .photo.locked .caption { 
-      font-style: italic; 
-      color: #ffbcda; 
-      background: rgba(0,0,0,0.9); 
-    }
-
-    /* =========================================
-       BOTÕES DO MODO DE EDIÇÃO
-       ========================================= */
-    .delete-btn, .edit-btn-card {
-      position: absolute; 
-      top: 10px; 
-      border: none; 
-      border-radius: 50%; 
-      width: 35px; 
-      height: 35px; 
-      cursor: pointer; 
-      z-index: 10; 
-      display: none; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-      padding: 0;
-    }
-
-    .delete-btn { right: 10px; background: #ff3b3b; color: white; font-size: 1.4em; font-weight: bold; }
-    .edit-btn-card { right: 55px; background: #ffbcda; color: #8e1e5c; font-size: 1.1em; }
-    
-    #main-content.edit-mode-active .delete-btn, 
-    #main-content.edit-mode-active .edit-btn-card { 
-      display: block; 
-    }
-
-    /* =========================================
-       PAINEL DO MODO EDIÇÃO (INFERIOR)
-       ========================================= */
-    #editor {
-      background: rgba(255, 255, 255, 0.15); 
-      backdrop-filter: blur(12px); 
-      padding: 30px; 
-      margin: 30px auto; 
-      width: 90%; 
-      max-width: 450px; 
-      border-radius: 15px; 
-      border: 1px solid rgba(255, 255, 255, 0.2); 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    #editor input, #editor button { 
-      margin-top: 10px; 
-      padding: 12px; 
-      width: 90%; 
-      border-radius: 8px; 
-      border: none; 
-      font-size: 1em; 
-      box-sizing: border-box; 
-    }
-
-    #editor input[type="text"], #editor input[type="date"] { 
-      background: rgba(255, 255, 255, 0.9); 
-      color: #333; 
-    }
-
-    #addPhoto, #changeBgBtn { 
-      background: #ff5c8d; 
-      color: #fff; 
-      font-weight: bold; 
-      cursor: pointer; 
-      box-shadow: 0 4px 10px rgba(255, 92, 141, 0.3); 
-    }
-
-    #addPhoto:hover, #changeBgBtn:hover { background: #e64c7c; }
-
-    footer { margin-top: 50px; margin-bottom: 30px; font-size: 0.9em; opacity: 0.8; }
-    .hidden { display: none; }
-
-    /* =========================================
-       ANIMAÇÕES COMPLEMENTARES
-       ========================================= */
-    @keyframes fadeInUp { 
-      from { opacity: 0; transform: translateY(20px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-
-    @keyframes fadeInScale { 
-      from { opacity: 0; transform: scale(0.9) translateY(20px); } 
-      to { opacity: 1; transform: scale(1) translateY(0); } 
-    }
-
-    /* Chuva de Corações */
-    .floating-heart { 
-      position: fixed; 
-      bottom: -10vh; 
-      font-size: 2rem; 
-      z-index: 9999; 
-      pointer-events: none; 
-      animation: floatUp ease-in forwards; 
-      opacity: 0; 
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); 
-    }
-
-    @keyframes floatUp { 
-      0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; } 
-      100% { transform: translateY(-120vh) scale(1.5) rotate(360deg); opacity: 0; } 
-    }
-
-    /* =========================================
-       LIGHTBOX (VISUALIZADOR DE FOTOS)
-       ========================================= */
-    #lightbox { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0, 0, 0, 0.9); 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      z-index: 1000; 
-      opacity: 0; 
-      pointer-events: none; 
-      transition: opacity 0.3s ease; 
-    }
-
-    #lightbox.visible { 
-      opacity: 1; 
-      pointer-events: all; 
-    }
-
-    .lightbox-content { 
-      position: relative; 
-      background: transparent; 
-      padding: 0; 
-      max-width: 90%; 
-      max-height: 90%; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-    }
-
-    #lightbox-img { 
-      max-width: 100%; 
-      max-height: 80vh; 
-      display: block; 
-      object-fit: contain; 
-      border-radius: 12px; 
-      box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); 
-    }
-
-    #lightbox-caption { 
-      margin-top: 15px; 
-      font-size: 1.2em; 
-      color: #fff; 
-      text-align: center; 
-      max-width: 100%; 
-      word-wrap: break-word; 
-      text-shadow: 1px 1px 5px rgba(0,0,0,0.8); 
-    }
-
-    .close-lightbox { 
-      position: absolute; 
-      top: -40px; 
-      right: 0; 
-      color: #fff; 
-      font-size: 40px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      z-index: 1001; 
-      text-shadow: 0 0 10px rgba(0,0,0,0.5); 
-    }
-
-    /* =========================================
-       PAGINAÇÃO & PLAYER SPOTIFY
-       ========================================= */
-    .music-link-icon { text-decoration: none; font-size: 1.2em; cursor: pointer; }
-    .lightbox-music-link { 
-      display: inline-block; 
-      margin-top: 10px; 
-      padding: 10px 20px; 
-      background-color: #ff5c8d; 
-      border-radius: 8px; 
-      color: #fff; 
-      font-weight: bold; 
-      text-decoration: none; 
-    }
-    
-    #pagination-controls { margin: 30px 0; text-align: center; }
-    .page-btn, .nav-btn { 
-      background: #ff5c8d; 
-      border: none; 
-      padding: 10px 16px; 
-      border-radius: 8px; 
-      color: #fff; 
-      font-weight: bold; 
-      cursor: pointer; 
-      margin: 0 4px; 
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-    }
-    
-    .page-btn.active { background: #b33c6a; cursor: default; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
-    .nav-btn:disabled { background: #aaa; cursor: not-allowed; box-shadow: none; }
-    
-    .lightbox-nav { 
-      position: absolute; 
-      top: 50%; 
-      transform: translateY(-50%); 
-      background: rgba(255, 255, 255, 0.15); 
-      backdrop-filter: blur(5px); 
-      border: 1px solid rgba(255,255,255,0.2); 
-      border-radius: 50%; 
-      width: 50px; 
-      height: 50px; 
-      font-size: 1.8em; 
-      color: white; 
-      cursor: pointer; 
-      z-index: 1002; 
-    }
-    
-    #lightbox-prev { left: -60px; } 
-    #lightbox-next { right: -60px; }
-    
-    #spotify-player { 
-      position: fixed; 
-      bottom: 20px; 
-      right: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4); 
-      z-index: 999; 
-    }
-    
-    /* =========================================
-       SISTEMA DO MAPA MÚNDI E ENIGMAS
-       ========================================= */
-    #map-modal { 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.9); 
-      z-index: 3000; 
-      display: none; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      backdrop-filter: blur(10px); 
-    }
-
-    #closeMapBtn { 
-      position: absolute; 
-      top: 20px; 
-      right: 30px; 
-      background: none; 
-      border: none; 
-      color: white; 
-      font-size: 2.5em; 
-      cursor: pointer; 
-      z-index: 3002; 
-    }
-
-    .map-container { 
-      position: relative; 
-      width: 90%; 
-      max-width: 1000px; 
-      aspect-ratio: 2 / 1; 
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg'); 
-      background-size: contain; 
-      background-repeat: no-repeat; 
-      background-position: center; 
-      filter: drop-shadow(0 0 20px rgba(255, 92, 141, 0.5)); 
-    }
-
-    .map-pin { 
-      position: absolute; 
-      width: 20px; 
-      height: 20px; 
-      background: #ff5c8d; 
-      border-radius: 50%; 
-      cursor: pointer; 
-      transform: translate(-50%, -50%); 
-      box-shadow: 0 0 15px #ff5c8d; 
-    }
-
-    .map-pin::after { 
-      content: ''; 
-      position: absolute; 
-      top: 0; left: 0; right: 0; bottom: 0; 
-      border-radius: 50%; 
-      border: 2px solid #ff5c8d; 
-      animation: pulseMap 1.5s infinite; 
-    }
-
-    @keyframes pulseMap { 
-      0% { transform: scale(1); opacity: 1; } 
-      100% { transform: scale(3); opacity: 0; } 
-    }
-    
-    #enigma-modal { 
-      position: absolute; 
-      top: 50%; 
-      left: 50%; 
-      transform: translate(-50%, -50%); 
-      background: rgba(255, 255, 255, 0.15); 
-      border: 1px solid rgba(255, 255, 255, 0.3); 
-      padding: 30px; 
-      border-radius: 20px; 
-      backdrop-filter: blur(15px); 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
-      width: 80%; 
-      max-width: 400px; 
-      display: none; 
-      z-index: 3005; 
-      color: white; 
-      text-align: center; 
-    }
-
-    
- /* =========================================
-       SISTEMA TAMAGOTCHI (O GATINHO)
-       ========================================= */
-   #pet-fab {
-      position: fixed;
-      bottom: 120px; 
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border: 2px solid #ffbcda;
-      border-radius: 50%;
-      font-size: 2em;
-      cursor: pointer;
-      z-index: 99999; /* Garante que fique por cima de tudo */
-      box-shadow: 0 4px 15px rgba(255, 92, 141, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s ease, background 0.3s;
-      animation: flutuarPet 3s ease-in-out infinite;
-      pointer-events: auto;
-    }
-    
-    #pet-fab:hover {
-      transform: scale(1.1);
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    @keyframes flutuarPet {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    #tamagotchi-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 3100;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(10px);
-    }
-
-    .tamagotchi-container {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 30px;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 350px;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-    }
-
-    #pet-display {
-      font-size: 5em;
-      margin: 10px 0 20px;
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-      animation: respirar 2s infinite alternate;
-    }
-
-    @keyframes respirar {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
-    }
-
-    /* Barras de Status */
-    .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-weight: bold;
-      font-size: 0.9em;
-    }
-    
-    .status-bar-bg {
-      width: 65%;
-      height: 12px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .status-fill {
-      height: 100%;
-      border-radius: 10px;
-      transition: width 0.5s ease-out, background-color 0.5s ease;
-    }
-
-    /* Botões de Ação do Pet */
-    .pet-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 25px;
-    }
-
-    .pet-btn {
-      background: rgba(255, 92, 141, 0.8);
-      color: white;
-      border: 1px solid rgba(255, 188, 218, 0.5);
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: "Quicksand", sans-serif;
-    }
-
-    .pet-btn:hover {
-      background: #e64c7c;
-      transform: translateY(-2px);
-    }
-    
-    .pet-btn:active {
-      transform: translateY(1px);
-    }
-    /* =========================================
-       BALÃO DE FALA DO GATINHO
-       ========================================= */
-    .speech-bubble {
-      background: rgba(255, 255, 255, 0.95);
-      color: #8e1e5c;
-      padding: 12px 18px;
-      border-radius: 15px;
-      position: relative;
-      display: inline-block;
-      font-weight: 600;
-      font-size: 0.95em;
-      margin-bottom: 15px;
-      max-width: 85%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      animation: popBubble 0.3s ease-out;
-    }
-    
-    .speech-bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 10px 10px 0;
-      border-style: solid;
-      border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
-      display: block;
-      width: 0;
-    }
-
-    @keyframes popBubble {
-      0% { transform: scale(0.8) translateY(10px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
-    }
-    /* =========================================
-       📱 MODO RESPONSIVO COMPLETO (CELULAR E TABLET)
-       ========================================= */
-
-    /* Ajustes para Tablets e telas médias */
-    @media (max-width: 800px) { 
-      #lightbox-prev { left: 10px; } 
-      #lightbox-next { right: 10px; } 
-      .lightbox-nav { width: 40px; height: 40px; font-size: 1.5em; }
-    }
-
-    /* Ajustes finos para Celulares (Smartphones) */
-    @media (max-width: 600px) { 
-      /* 1. Títulos e Textos */
-      h1 { font-size: 2.2em; text-align: center; } 
-      
-      /* 2. Botões Principais (Cabeçalho) */
-      .header-buttons { flex-wrap: wrap; gap: 8px; justify-content: center; padding: 0 10px; }
-      .header-buttons button { flex: 1 1 45%; font-size: 0.9em; padding: 10px 5px; }
-
-      /* 3. Filtros da Galeria */
-      #gallery-controls { flex-wrap: wrap; justify-content: center; gap: 8px; } 
-      .control-btn { flex: 1 1 auto; font-size: 0.85em; padding: 8px 10px; text-align: center; }
-
-      /* 4. Grade de Fotos (Fica em 1 coluna e centraliza) */
-      #gallery { grid-template-columns: 1fr; width: 95%; margin-top: 10px; gap: 25px; } 
-
-      /* 5. Organização do Rodapé (Evita que o Spotify tampe o Gatinho) */
-      #spotify-player { 
-        bottom: 10px; right: 50%; transform: translateX(50%); 
-        width: 95%; max-width: 350px; height: 45px;
-      }
-      #pet-fab { 
-        bottom: 70px; right: 15px; 
-        width: 55px; height: 55px; font-size: 1.8em; 
-      }
-      #toast { bottom: 85px; width: 85%; font-size: 0.95em; text-align: center; padding: 12px 20px; }
-
-      /* 6. Blindagem dos Modais (Garante rolagem em telas baixinhas) */
-      .tamagotchi-container, 
-      #roleta-modal > div, 
-      #edit-photo-modal > div, 
-      #login-modal > div,
-      #gift-modal > div {
-        max-height: 85vh; overflow-y: auto; padding: 20px;
-      }
-
-      /* 7. Mapa e Enigmas */
-      .map-container { width: 100%; margin-top: 20px; }
-      #closeMapBtn { top: 10px; right: 15px; font-size: 2.2em; }
-      #enigma-modal { width: 90%; padding: 20px; }
-      
-      /* 8. Botão Secreto no Rodapé (Para o usuário conseguir clicar com o dedo) */
-      footer { padding: 20px 0 80px 0; }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  
-  <!-- =========================================
+
+<body class="intro">
+
+  <!-- ═════════════════════════════════════════════════════════════
        1. TELA DE INTRODUÇÃO
-       ========================================= -->
+       ═════════════════════════════════════════════════════════════ -->
   <div id="intro-screen">
-    <div class="heart"></div>
+    <div class="heart" aria-hidden="true"></div>
     <h1>Bem-vindo(a) ao Nosso Cantinho 💖</h1>
     <p class="intro-quote">"Você transforma tudo à minha volta em um mundo colorido, obrigada por acender a luz."</p>
     <div class="intro-buttons">
-      <button id="enterBtn">Entrar</button>
+      <button id="enterBtn" class="btn btn-primary">Entrar</button>
     </div>
   </div>
 
-  <!-- =========================================
-       2. MODAL DE LOGIN (CHAVE MESTRA)
-       ========================================= -->
-  <div id="login-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2500; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-    <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 350px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
-      <button id="closeLoginBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
-      <h3 style="margin-top: 0; font-family: 'Dancing Script', cursive; font-size: 2.2em; color: white;">Acesso Restrito 🔐</h3>
-      <input type="password" id="senhaInput" placeholder="Digite a chave mestra" style="width: 100%; padding: 15px; margin: 20px 0; border-radius: 10px; border: none; box-sizing: border-box; text-align: center; font-size: 1.1em;">
-      <button id="confirmLoginBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">Acessar Painel</button>
-      <button id="forgotPasswordBtn" style="background: transparent; color: #ffbcda; border: none; cursor: pointer; text-decoration: underline; font-size: 0.9em;">Esqueci a senha</button>
-    </div>
-  </div>
 
-  <!-- =========================================
-       3. MODAL DE EDIÇÃO DE FOTOS
-       ========================================= -->
-  <div id="edit-photo-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2600; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-    <div style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 450px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
-      <button id="closeEditModalBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
-      <h3 style="margin-top: 0; color: white;">✏️ Editar Lembrança</h3>
-      <input type="hidden" id="editPhotoId">
-      <input type="text" id="editCaptionInput" placeholder="Nova legenda" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      <input type="text" id="editMusicLinkInput" placeholder="Novo link do Spotify" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; color: white; font-weight: bold;">Data de revelação ⏳:</p>
-      <input type="date" id="editUnlockDateInput" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1em;">
-      <button id="saveEditBtn" style="background: #ff5c8d; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1.1em;">Salvar Alterações</button>
-    </div>
-  </div>
-
-  <!-- =========================================
-       4. CONTEÚDO PRINCIPAL (GALERIA E PAINEL)
-       ========================================= -->
+  <!-- ═════════════════════════════════════════════════════════════
+       2. CONTEÚDO PRINCIPAL
+       ═════════════════════════════════════════════════════════════ -->
   <div id="main-content" class="hidden">
-     <header>
+
+    <header class="site-header">
       <h1>Nosso Cantinho 💕</h1>
-      <div class="header-buttons">
-        <button id="openMapBtn">Explorar Mapa 🌍</button>
-        <button id="openRoletaBtn" style="background: #ff9f43; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; pointer-events: auto;">Roleta da Noite 🎰</button>
-        <button id="editBtn">Modo Edição</button>
-      </div>
+      <nav class="header-buttons">
+        <button id="openMapBtn"    class="btn btn-map">Explorar Mapa 🌍</button>
+        <button id="openRoletaBtn" class="btn btn-orange">Roleta da Noite 🎰</button>
+        <button id="editBtn"       class="btn btn-primary">Modo Edição</button>
+      </nav>
     </header>
 
+    <!-- [📷 FOTOS] Filtros e ordenação -->
     <div id="gallery-controls">
-      <button class="control-btn active" data-sort="desc" id="sort-desc-btn">Mais Recentes</button>
-      <button class="control-btn" data-sort="asc" id="sort-asc-btn">Mais Antigas</button>
+      <button class="control-btn active" data-sort="desc">Mais Recentes</button>
+      <button class="control-btn"        data-sort="asc">Mais Antigas</button>
       <div class="control-divider"></div>
-      <button class="control-btn active" data-filter="all" id="filter-all-btn">Todas</button>
-      <button class="control-btn" data-filter="unlocked" id="filter-unlocked-btn">Reveladas</button>
-      <button class="control-btn" data-filter="locked" id="filter-locked-btn">Cápsulas ⏳</button>
+      <button class="control-btn active" data-filter="all">Todas</button>
+      <button class="control-btn"        data-filter="unlocked">Reveladas</button>
+      <button class="control-btn"        data-filter="locked">Cápsulas ⏳</button>
     </div>
 
-    <!-- Onde as fotos aparecem -->
+    <!-- [📷 FOTOS] Galeria (preenchida por js/gallery.js) -->
     <main id="gallery"></main>
     <div id="pagination-controls"></div>
 
-    <!-- =========================================
-         MODO EDIÇÃO (Oculto por padrão)
-         ========================================= -->
-    <div id="editor" class="hidden">
-      <!-- Seção: Adicionar Foto -->
-      <h2 style="color: white; margin-top: 0;">✨ Adicionar Lembrança</h2>
-      <input type="file" id="imageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
-      <input type="text" id="captionInput" placeholder="Legenda ou história da foto">
-      <input type="text" id="musicLinkInput" placeholder="Link do Spotify (opcional)">
-      <p style="margin: 15px 0 5px 0; font-size: 0.9em; text-align: left; margin-left: 5%; color: white; font-weight: bold;">Data de revelação ⏳:</p>
-      <input type="date" id="unlockDateInput">
-      <button id="addPhoto" style="margin-top: 20px; padding: 15px;">Guardar Momento</button>
+    <!-- ─────────────────────────────────────────────────────────────
+         PAINEL DE ADMINISTRAÇÃO (aparece após login — js/admin.js)
+         ───────────────────────────────────────────────────────────── -->
+    <section id="editor" class="hidden">
 
-      <!-- Seção: Gerenciador do Mapa (CRUD Completo) -->
-      <hr style="border: 1px solid #ffbcda; margin: 30px 0;">
-      <h3 style="color: #d86ca3; margin-bottom: 10px;">🗺️ Gerenciar Pinos do Mapa</h3>
-      
-      <!-- Lista Visual de Pinos -->
-      <div id="lista-pinos" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
-        <span style="color: #ddd; font-size: 0.9em; text-align: center;">Carregando dados do banco...</span>
+      <div class="editor-topbar">
+        <span>🔓 Modo edição ativo</span>
+        <button id="logoutBtn" class="btn btn-small btn-muted">Sair</button>
       </div>
 
-      <!-- Formulário de Criação e Edição de Pino -->
+      <!-- [📷 FOTOS][☁️ CLOUDINARY][🔥 FIREBASE] Nova lembrança -->
+      <h2 class="editor-title">✨ Adicionar Lembrança</h2>
+      <input type="file" id="imageInput" accept="image/*" class="input input-file">
+      <input type="text" id="captionInput"   class="input" placeholder="Legenda ou história da foto">
+      <input type="url"  id="musicLinkInput" class="input" placeholder="Link do Spotify (opcional)">  <!-- [🎵 MÚSICA] -->
+      <label class="input-label" for="unlockDateInput">Data de revelação ⏳ (opcional):</label>
+      <input type="date" id="unlockDateInput" class="input">
+      <button id="addPhoto" class="btn btn-primary btn-block">Guardar Momento</button>
+
+      <!-- [🔥 FIREBASE] Pinos do mapa -->
+      <hr class="editor-divider">
+      <h3 class="editor-subtitle">🗺️ Gerenciar Pinos do Mapa</h3>
+
+      <div id="lista-pinos" class="pin-list">
+        <span class="muted">Carregando dados do banco...</span>
+      </div>
+
       <input type="hidden" id="pin-id">
-      
-      <input type="text" id="pin-cidade" placeholder="Nome do Lugar (Ex: Ubatuba, Brasil)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-      <input type="text" id="pin-pergunta" placeholder="Pergunta do Enigma" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-      <input type="text" id="pin-resposta" placeholder="Resposta Correta (Ex: 21/04/2026)" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-      
-      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <input type="text" id="pin-top" placeholder="Posição Y (Ex: 70%)" style="width: 50%; padding: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
-        <input type="text" id="pin-left" placeholder="Posição X (Ex: 33%)" style="width: 50%; padding: 10px; border-radius: 8px; border: 1px solid #ffbcda;">
+      <input type="text" id="pin-cidade"   class="input" placeholder="Nome do Lugar (Ex: Ubatuba, Brasil)">
+      <input type="text" id="pin-pergunta" class="input" placeholder="Pergunta do Enigma">
+      <input type="text" id="pin-resposta" class="input" placeholder="Resposta Correta (Ex: 21/04/2026)" autocomplete="off">
+      <div class="input-row">
+        <input type="text" id="pin-top"  class="input" placeholder="Posição Y (Ex: 70%)">
+        <input type="text" id="pin-left" class="input" placeholder="Posição X (Ex: 33%)">
+      </div>
+      <p class="hint">Dica: abra o mapa estando no modo edição e toque no lugar desejado — as posições são preenchidas sozinhas.</p>
+      <input type="url" id="pin-recompensa" class="input" placeholder="Link da Foto de Recompensa (Opcional)">
+      <div class="input-row">
+        <button id="btn-cancelar-edicao-pin" class="btn btn-muted hidden">Cancelar</button>
+        <button id="btn-salvar-pin" class="btn btn-primary btn-block">Salvar Novo Pino 💾</button>
       </div>
 
-      <input type="text" id="pin-recompensa" placeholder="Link da Foto de Recompensa (Opcional)" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ffbcda;">
-      
-      <div style="display: flex; gap: 10px;">
-        <button id="btn-cancelar-edicao-pin" style="display: none; background: #666; color: white; padding: 12px; border: none; border-radius: 8px; width: 40%; font-weight: bold; cursor: pointer;">Cancelar</button>
-        <button id="btn-salvar-pin" style="background: #ff5c8d; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">Salvar Novo Pino 💾</button>
-      </div>
-      
-      <!-- Seção: Estilo e Background -->
-      <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
-      <h2 style="color: white;">🎨 Estilo da Página</h2>
-      <input type="file" id="bgImageInput" accept="image/*" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);">
-      <button id="changeBgBtn">Salvar Novo Fundo</button>
-      <button id="removeBgBtn" style="background-color: #ff3b3b; color: white; margin-top: 10px; font-weight: bold;">Remover Fundo Atual</button>
-    </div>
+      <!-- [☁️ CLOUDINARY][🔥 FIREBASE] Fundo -->
+      <hr class="editor-divider">
+      <h2 class="editor-title">🎨 Estilo da Página</h2>
+      <input type="file" id="bgImageInput" accept="image/*" class="input input-file">
+      <button id="changeBgBtn" class="btn btn-primary btn-block">Salvar Novo Fundo</button>
+      <button id="removeBgBtn" class="btn btn-danger btn-block">Remover Fundo Atual</button>
+    </section>
 
     <footer><p>Feito com 💗. Sou inteiramente sua.</p></footer>
   </div>
 
-  <!-- =========================================
-       5. COMPONENTES FLUTUANTES (Toast, Lightbox, Mapa, Spotify)
-       ========================================= -->
-  <div id="toast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 15px 35px; background: #fff; color: #8e1e5c; border-radius: 50px; font-weight: bold; font-size: 1.1em; z-index: 3000; box-shadow: 0 10px 40px rgba(0,0,0,0.4);"></div>
 
-  <!-- Player de Áudio Nativo com a Música Completa -->
-  <audio id="spotify-player" controls loop style="position: fixed; bottom: 20px; right: 20px; z-index: 999; border-radius: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); height: 40px; width: 250px;">
-    <source src="https://res.cloudinary.com/doplrv465/video/upload/v1779205456/VELUDO_MARROM_-_Liniker_fl8j91.mp3" type="audio/mpeg">
-    Seu navegador não suporta a tag de áudio.
-  </audio>
+  <!-- ═════════════════════════════════════════════════════════════
+       3. MODAIS
+       Abrir/fechar: openModal('id') / closeModal('id') em js/utils.js
+       Qualquer botão com data-close="id" fecha o modal indicado.
+       ═════════════════════════════════════════════════════════════ -->
 
-  
-  <!-- Visualizador de Fotos em Tela Cheia -->
-  <div id="lightbox" class="hidden">
+  <!-- Login (chave mestra) — [🔥 FIREBASE AUTH] -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" data-close="login-modal" aria-label="Fechar">&times;</button>
+      <h3 class="modal-title">Acesso Restrito 🔐</h3>
+      <input type="password" id="senhaInput" class="input input-center" placeholder="Digite a chave mestra">
+      <button id="confirmLoginBtn" class="btn btn-primary btn-block">Acessar Painel</button>
+      <button id="forgotPasswordBtn" class="btn-link">Esqueci a senha</button>
+    </div>
+  </div>
+
+  <!-- Editar lembrança — [📷 FOTOS][🔥 FIREBASE] -->
+  <div id="edit-photo-modal" class="modal-overlay">
+    <div class="modal-box modal-box--wide">
+      <button class="modal-close" data-close="edit-photo-modal" aria-label="Fechar">&times;</button>
+      <h3 class="modal-heading">✏️ Editar Lembrança</h3>
+      <input type="hidden" id="editPhotoId">
+      <input type="text" id="editCaptionInput"   class="input" placeholder="Nova legenda">
+      <input type="url"  id="editMusicLinkInput" class="input" placeholder="Novo link do Spotify">
+      <label class="input-label" for="editUnlockDateInput">Data de revelação ⏳:</label>
+      <input type="date" id="editUnlockDateInput" class="input">
+      <button id="saveEditBtn" class="btn btn-primary btn-block">Salvar Alterações</button>
+    </div>
+  </div>
+
+  <!-- Lightbox (foto em tela cheia) — [📷 FOTOS][🎵 MÚSICA] -->
+  <div id="lightbox" class="modal-overlay modal-overlay--dark">
     <div class="lightbox-content">
-      <span class="close-lightbox">×</span>
-      <button id="lightbox-prev" class="lightbox-nav">&#10094;</button>
-      <img id="lightbox-img" src="" alt="Foto Ampliada">
-      <button id="lightbox-next" class="lightbox-nav">&#10095;</button>
+      <button class="close-lightbox" data-close="lightbox" aria-label="Fechar">&times;</button>
+      <button id="lightbox-prev" class="lightbox-nav" aria-label="Anterior">&#10094;</button>
+      <img id="lightbox-img" src="" alt="Foto ampliada">
+      <button id="lightbox-next" class="lightbox-nav" aria-label="Próxima">&#10095;</button>
       <div id="lightbox-caption"></div>
     </div>
   </div>
 
-  <!-- Modal do Mapa Interativo -->
-  <div id="map-modal">
-    <button id="closeMapBtn">&times;</button>
-    <h2 style="color: white; font-family: 'Dancing Script', cursive; font-size: 3em; margin-bottom: 10px;">Nossas Memórias pelo Mundo</h2>
-    
-    <div id="mapa-dinamico-container" class="map-container">
-      <!-- Os pinos nascem aqui dinamicamente -->
+  <!-- Mapa + enigma — [🔥 FIREBASE map_pins] -->
+  <div id="map-modal" class="modal-overlay modal-overlay--dark">
+    <button class="modal-close modal-close--big" data-close="map-modal" aria-label="Fechar">&times;</button>
+    <h2 class="map-title">Nossas Memórias pelo Mundo</h2>
+    <p id="map-admin-hint" class="hint hidden">Modo edição: toque no mapa para escolher a posição do pino.</p>
+
+    <div class="map-scroll">
+      <div id="mapa-dinamico-container" class="map-container"></div>
     </div>
 
-    <!-- Janela do Enigma do Mapa -->
-    <div id="enigma-modal">
-      <h3 id="enigma-title" style="margin-top: 0; color: #ffbcda;">Lugar</h3>
-      <p id="enigma-question" style="font-size: 1.1em; font-weight: bold;">Pergunta</p>
-      <input type="text" id="enigma-answer" placeholder="Sua resposta..." style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; text-align: center;">
-      <button id="btn-resolver-enigma" style="background: #ff5c8d; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">Desbloquear Memória 🔓</button>
-      <button id="closeEnigmaBtn" style="background: transparent; border: none; color: white; margin-top: 15px; cursor: pointer; text-decoration: underline;">Voltar ao Mapa</button>
+    <div id="enigma-modal" class="glass-card hidden">
+      <h3 id="enigma-title" class="enigma-title">Lugar</h3>
+
+      <div id="enigma-form">
+        <p id="enigma-question" class="enigma-question">Pergunta</p>
+        <input type="text" id="enigma-answer" class="input input-center" placeholder="Sua resposta..." autocomplete="off">
+        <p id="enigma-feedback" class="enigma-feedback"></p>
+        <button id="btn-resolver-enigma" class="btn btn-primary btn-block">Desbloquear Memória 🔓</button>
+      </div>
+
+      <div id="enigma-success" class="hidden">
+        <p class="enigma-question">Parabéns! Você desbloqueou esta memória! 🎉</p>
+        <img id="enigma-reward-img" class="enigma-reward hidden" alt="Recompensa">
+      </div>
+
+      <button id="closeEnigmaBtn" class="btn-link btn-link--light">Voltar ao Mapa</button>
     </div>
   </div>
 
-  <!-- =========================================
-       6. SCRIPTS DO FIREBASE E LÓGICA DO SISTEMA
-       ========================================= -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-<!-- =========================================
-       BOTÃO E MODAL DO TAMAGOTCHI (GATINHO)
-       ========================================= -->
-  <div id="pet-fab" title="Cuidar do nosso gatinho">🐱</div>
+  <!-- Tamagotchi — [💾 LOCAL] / [🔥 FIREBASE] a partir da data em config.js -->
+  <div id="tamagotchi-modal" class="modal-overlay">
+    <div class="modal-box tamagotchi-container">
+      <button class="modal-close" data-close="tamagotchi-modal" aria-label="Fechar">&times;</button>
+      <h3 class="modal-title">Nosso Gatinho 🐾</h3>
 
-  <div id="tamagotchi-modal">
-    <div class="tamagotchi-container">
-      <button id="closePetBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 1.8em; cursor: pointer;">&times;</button>
-      
-      <h3 style="margin-top: 0; color: white; font-family: 'Dancing Script', cursive; font-size: 2.2em;">Nosso Gatinho 🐾</h3>
-      <!-- O balão de fala entra bem aqui! -->
       <div id="pet-speech" class="speech-bubble">Miau! Estava com saudades. 💕</div>
-      <!-- Botão de Presente Surpresa (Escondido por padrão) -->
-      <button id="btn-presente-gato" style="display: none; background: #ffd700; color: #8e1e5c; font-weight: bold; border: none; padding: 8px 15px; border-radius: 12px; cursor: pointer; margin: -5px auto 15px auto; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.5); animation: respirar 1.5s infinite;">Abrir Presente 🎁</button>
-      <!-- Onde o gatinho aparece visualmente -->
-      <div id="pet-display">🐈</div>
-      
-      <!-- Status -->
-      <div class="status-row">
-        <span>Fome 🍗</span>
-        <div class="status-bar-bg"><div id="bar-fome" class="status-fill" style="width: 100%; background: #ff9f43;"></div></div>
-      </div>
-      <div class="status-row">
-        <span>Energia ⚡</span>
-        <div class="status-bar-bg"><div id="bar-energia" class="status-fill" style="width: 100%; background: #feca57;"></div></div>
-      </div>
-      <div class="status-row">
-        <span>Diversão 🧶</span>
-        <div class="status-bar-bg"><div id="bar-diversao" class="status-fill" style="width: 100%; background: #ff5c8d;"></div></div>
-      </div>
-      <div class="status-row">
-        <span>Higiene 🛁</span>
-        <div class="status-bar-bg"><div id="bar-higiene" class="status-fill" style="width: 100%; background: #48dbfb;"></div></div>
-      </div>
+      <button id="btn-presente-gato" class="btn btn-gift hidden">Abrir Presente 🎁</button>
 
-      <!-- Botões de Ação -->
+      <!-- 5 cliques rápidos aqui abrem o diário secreto -->
+      <div id="pet-display">🐈</div>
+
+      <div class="status-row"><span>Fome 🍗</span>     <div class="status-bar-bg"><div id="bar-fome"     class="status-fill fill-fome"></div></div></div>
+      <div class="status-row"><span>Energia ⚡</span>  <div class="status-bar-bg"><div id="bar-energia"  class="status-fill fill-energia"></div></div></div>
+      <div class="status-row"><span>Diversão 🧶</span> <div class="status-bar-bg"><div id="bar-diversao" class="status-fill fill-diversao"></div></div></div>
+      <div class="status-row"><span>Higiene 🛁</span>  <div class="status-bar-bg"><div id="bar-higiene"  class="status-fill fill-higiene"></div></div></div>
+
       <div class="pet-actions">
         <button class="pet-btn" id="btn-alimentar">Dar Sachê 🐟</button>
         <button class="pet-btn" id="btn-dormir">Colocar p/ Dormir 💤</button>
@@ -1062,1028 +223,84 @@
       </div>
     </div>
   </div>
-  <!-- Modal do Presente do Gato -->
-  <div id="gift-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3200; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-    <div style="background: linear-gradient(to bottom right, #ffbcda, #fff); padding: 30px; border-radius: 20px; text-align: center; max-width: 300px; box-shadow: 0 15px 35px rgba(0,0,0,0.4);">
-       <h2 style="margin-top: 0; color: #8e1e5c; font-family: 'Dancing Script', cursive; font-size: 2.5em;">Surpresa! 💌</h2>
-       <p id="gift-message" style="color: #333; font-weight: bold; font-size: 1.1em;"></p>
-       <button id="closeGiftBtn" style="margin-top: 20px; background: #ff5c8d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Guardar no coração 💕</button>
+
+  <!-- Presente do gato -->
+  <div id="gift-modal" class="modal-overlay modal-overlay--top">
+    <div class="modal-box modal-box--light modal-box--narrow">
+      <h2 class="modal-title modal-title--dark">Surpresa! 💌</h2>
+      <p id="gift-message" class="gift-message"></p>
+      <button class="btn btn-primary" data-close="gift-modal">Guardar no coração 💕</button>
     </div>
   </div>
-  <!-- Modal da Roleta do Encontro -->
-  <div id="roleta-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3300; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-    <div style="background: linear-gradient(to bottom right, #fff, #ffeef6); padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative;">
-       <button id="closeRoletaBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #8e1e5c; font-size: 2em; cursor: pointer;">&times;</button>
-       <h2 style="margin-top: 0; color: #8e1e5c; font-family: 'Dancing Script', cursive; font-size: 2.5em;">Combo da Noite 🎰</h2>
-       
-       <div id="roleta-resultado" style="font-size: 1.1em; color: #333; margin: 20px 0; min-height: 120px; display: flex; flex-direction: column; justify-content: center; gap: 10px; background: rgba(255, 92, 141, 0.1); padding: 15px; border-radius: 15px; border: 1px dashed #ff5c8d;">
-          <span style="color: #666; font-style: italic;">Clique no botão abaixo para sortear o nosso encontro perfeito!</span>
-       </div>
-       
-       <button id="btn-girar-roleta" style="background: #ff9f43; color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1em; width: 100%; box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);">Girar Roleta 🎲</button>
+
+  <!-- Roleta da noite -->
+  <div id="roleta-modal" class="modal-overlay">
+    <div class="modal-box modal-box--light">
+      <button class="modal-close modal-close--dark" data-close="roleta-modal" aria-label="Fechar">&times;</button>
+      <h2 class="modal-title modal-title--dark">Combo da Noite 🎰</h2>
+      <div id="roleta-resultado" class="roleta-resultado"></div>
+      <button id="btn-girar-roleta" class="btn btn-orange btn-block btn-big">Girar Roleta 🎲</button>
     </div>
   </div>
-  <!-- =========================================
-       EASTER EGG: DIÁRIO SECRETO DO GATINHO
-       ========================================= -->
-  <div id="cat-diary-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
-    <div style="background: #fff; color: #333; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative; font-family: 'Courier New', Courier, monospace; box-shadow: 0 10px 30px rgba(255, 92, 141, 0.5);">
-      <button id="closeDiaryBtn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #8e1e5c; font-size: 2em; cursor: pointer; font-weight: bold;">&times;</button>
-      <h2 style="text-align: center; color: #8e1e5c; border-bottom: 2px dashed #ffbcda; padding-bottom: 10px; font-family: 'Dancing Script', cursive; font-size: 2.5em; margin-top: 0;">🐾 Diário de um Felino 🐾</h2>
-      
-      <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
-        
-        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
-          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 01 - O Mistério da Borda Recheada</strong><br>
-          <em style="font-size: 0.9em; color: #666;">Data: O dia em que eu quase roubei mussarela.</em><br><br>
-          Elas acham que eu não sei, mas eu vejo tudo. Hoje foi dia de sovar massa. Fiquei rondando a cozinha com a minha melhor cara de coitado esperando um pedaço cair, mas nada. Pelo menos depois fomos pro sofá assistir Bones. Aquele cara, o Booth, não me engana. Mas um colo é um colo, né?
-        </div>
 
-        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
-          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 02 - A Grande Viagem</strong><br>
-          <em style="font-size: 0.9em; color: #666;">Data: Antes de pegar a estrada.</em><br><br>
-          Escutei elas falando sobre ir visitar a família em São José do Rio Preto de novo. Começaram a fazer as contas e olhar os carros... Só espero que elas lembrem de deixar meu estoque de sachê em dia se forem demorar!
-        </div>
+  <!-- Easter egg: diário secreto do gatinho -->
+  <div id="cat-diary-modal" class="modal-overlay modal-overlay--top">
+    <div class="diary-box">
+      <button class="modal-close modal-close--dark" data-close="cat-diary-modal" aria-label="Fechar">&times;</button>
+      <h2 class="diary-title">🐾 Diário de um Felino 🐾</h2>
 
-        <div style="background: #ffeef6; padding: 15px; border-radius: 10px; border-left: 5px solid #ff5c8d;">
-          <strong style="color: #8e1e5c; font-size: 1.1em;">Entrada 03 - Investigação Forense</strong><br>
-          <em style="font-size: 0.9em; color: #666;">Data: Madrugada adentro.</em><br><br>
-          Passaram horas olhando pro Cubo Mágico. Tentei dar uma patada pra ajudar a montar a tal da "cruz branca", mas fui repreendido. Humanos não entendem o meu método avançado de resolução (que consiste em jogar o cubo no chão da sala).
-        </div>
+      <div class="diary-entries">
+        <article class="diary-entry">
+          <strong>Entrada 01 - O Mistério da Borda Recheada</strong>
+          <em>Data: O dia em que eu quase roubei mussarela.</em>
+          <p>Elas acham que eu não sei, mas eu vejo tudo. Hoje foi dia de sovar massa. Fiquei rondando a cozinha com a minha melhor cara de coitado esperando um pedaço cair, mas nada. Pelo menos depois fomos pro sofá assistir Bones. Aquele cara, o Booth, não me engana. Mas um colo é um colo, né?</p>
+        </article>
 
+        <article class="diary-entry">
+          <strong>Entrada 02 - A Grande Viagem</strong>
+          <em>Data: Antes de pegar a estrada.</em>
+          <p>Escutei elas falando sobre ir visitar a família em São José do Rio Preto de novo. Começaram a fazer as contas e olhar os carros... Só espero que elas lembrem de deixar meu estoque de sachê em dia se forem demorar!</p>
+        </article>
+
+        <article class="diary-entry">
+          <strong>Entrada 03 - Investigação Forense</strong>
+          <em>Data: Madrugada adentro.</em>
+          <p>Passaram horas olhando pro Cubo Mágico. Tentei dar uma patada pra ajudar a montar a tal da "cruz branca", mas fui repreendido. Humanos não entendem o meu método avançado de resolução (que consiste em jogar o cubo no chão da sala).</p>
+        </article>
       </div>
     </div>
   </div>
-  <script>
-    // ---- Configuração Firebase ----
-    const firebaseConfig = {
-      apiKey: "AIzaSyBnx2V3kPc9U94qJoEsV-eIaoAChR7ety0",
-      authDomain: "inteiramene-sua.firebaseapp.com",
-      projectId: "inteiramene-sua",
-      storageBucket: "inteiramene-sua.firebasestorage.app",
-      messagingSenderId: "801226819273",
-      appId: "1:801226819273:web:107cc21e7e687a1d7a2f18"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth(); 
-    const photosCollection = db.collection("photos");
-    const settingsDoc = db.collection("settings").doc("appSettings");
-    const mapPinsCollection = db.collection("map_pins"); // Banco de dados do Mapa
 
-    // ---- Cloudinary Config ----
-    const CLOUD_NAME = "doplrv465";
-    const UPLOAD_PRESET = "meudengo";
-
-    // ---- Variáveis de Controle ----
-    let photos = [];
-    let filteredPhotos = [];
-    let mapPins = []; // Lista local de pinos
-    let currentPage = 1;
-    const photosPerPage = 4;
-    let currentLightboxIndex = 0; 
-    let currentSortOrder = 'desc';
-    let currentFilterType = 'all';
-
-    const bgGradient = "linear-gradient(to bottom right, rgba(142, 30, 92, 0.8), rgba(216, 108, 163, 0.8))";
-    const bgGradientSolid = "linear-gradient(to bottom right, #8e1e5c, #d86ca3)";
-
-    const gallery = document.getElementById('gallery');
-    const paginationControls = document.getElementById('pagination-controls');
-    const introScreen = document.getElementById('intro-screen');
-    const mainContent = document.getElementById('main-content');
-    const editor = document.getElementById('editor');
-    const spotifyPlayer = document.getElementById('spotify-player');
-
-    // ---- Funções Úteis ----
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.innerText = message;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 3500);
-    }
-
-    function createHeartShower() {
-      const emojis = ['❤️', '💖', '💕', '✨', '😍'];
-      for (let i = 0; i < 40; i++) {
-        const heart = document.createElement('div');
-        heart.className = 'floating-heart';
-        heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-        heart.style.left = Math.random() * 100 + 'vw';
-        heart.style.animationDuration = (Math.random() * 3 + 3) + 's'; 
-        heart.style.animationDelay = Math.random() * 1.5 + 's'; 
-        heart.style.fontSize = (Math.random() * 1.5 + 1) + 'rem'; 
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 7000); 
-      }
-    }
-
-    // ---- Funções de Background ----
-    function applyBackground(imageUrl) {
-      const bgValue = imageUrl ? `${bgGradient}, url(${imageUrl})` : bgGradientSolid;
-      document.body.style.background = bgValue;
-      introScreen.style.background = bgValue;
-      const styles = { backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' };
-      Object.assign(document.body.style, styles);
-      Object.assign(introScreen.style, styles);
-    }
-
-    async function loadSettings() {
-      try {
-        const doc = await settingsDoc.get();
-        if (doc.exists && doc.data().backgroundImageUrl) applyBackground(doc.data().backgroundImageUrl);
-        else removeBackground(); 
-      } catch (error) { 
-        console.error("Erro configurações:", error); 
-      }
-    }
-
-    async function removeBackground() {
-      applyBackground(null);
-      try {
-        await settingsDoc.set({ backgroundImageUrl: null }, { merge: true });
-        showToast("Fundo removido com sucesso!");
-      } catch (error) { 
-        showToast("Erro ao remover fundo."); 
-      }
-    }
-
-    // ---- Processamento da Galeria ----
-    function processPhotos() {
-      const hoje = new Date().toISOString().split('T')[0];
-      filteredPhotos = photos.filter(photo => {
-        const isLocked = photo.unlockDate && photo.unlockDate > hoje;
-        if (currentFilterType === 'unlocked') return !isLocked;
-        if (currentFilterType === 'locked') return isLocked;
-        return true; 
-      });
-      filteredPhotos.sort((a, b) => {
-        const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
-        const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
-        return currentSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-      });
-    }
-
-    async function loadPhotos() {
-      try {
-        const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
-        photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        processPhotos();
-        renderGalleryAndPagination(); 
-      } catch (error) {
-        showToast("Erro ao carregar fotos.");
-      }
-    }
-
-    function renderGalleryAndPagination() {
-      gallery.innerHTML = '';
-      paginationControls.innerHTML = '';
-
-      if (filteredPhotos.length === 0) {
-        gallery.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; color: rgba(255,255,255,0.7);">Nenhuma memória encontrada.</div>`;
-        return;
-      }
-
-      const totalPages = Math.ceil(filteredPhotos.length / photosPerPage);
-      if (currentPage > totalPages) currentPage = totalPages;
-      if (currentPage < 1) currentPage = 1;
-
-      const startIndex = (currentPage - 1) * photosPerPage;
-      const photosToShow = filteredPhotos.slice(startIndex, startIndex + photosPerPage);
-
-      photosToShow.forEach((photo, index) => {
-        const originalIndex = filteredPhotos.findIndex(p => p.id === photo.id);
-        const div = document.createElement('div');
-        const hoje = new Date().toISOString().split('T')[0];
-        const isLocked = photo.unlockDate && photo.unlockDate > hoje;
-        
-        div.className = `photo ${isLocked ? 'locked' : ''}`;
-        div.style.animationDelay = `${index * 0.15}s`;
-
-        const musicIconHTML = (!isLocked && photo.musicLink) ? `<a href="${photo.musicLink}" target="_blank" class="music-link-icon">🎵</a>` : '';
-        const lockIconHTML = isLocked ? `<div class="lock-icon">🔒</div>` : '';
-        const likesCount = photo.likes || 0;
-        const likeBtnHTML = `<div class="like-container"><button class="like-btn" data-id="${photo.id}">❤️</button><span class="like-count" id="like-count-${photo.id}">${likesCount}</span></div>`;
-
-        let textoLegenda = photo.caption;
-        if (isLocked) {
-          const dataBr = photo.unlockDate.split('-').reverse().join('/');
-          textoLegenda = `Mistério... Disponível em ${dataBr} ⏳`;
-        }
-
-        div.innerHTML = `
-          <button class="delete-btn" data-id="${photo.id}">×</button>
-          <button class="edit-btn-card" data-id="${photo.id}">✏️</button>
-          ${lockIconHTML}
-          <img src="${photo.url}" alt="Lembrança" data-id="${photo.id}" data-index-in-page="${originalIndex}">
-          <div class="caption">
-            <div class="caption-content"><span>${textoLegenda}</span> ${musicIconHTML}</div>
-            ${likeBtnHTML}
-          </div>`;
-        
-        gallery.appendChild(div);
-      });
-
-      setupPagination(totalPages);
-      setupLightboxListeners();
-    }
-
-    // Botões de filtro da galeria
-    document.querySelectorAll('.control-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const sortVal = e.target.getAttribute('data-sort');
-        const filterVal = e.target.getAttribute('data-filter');
-        
-        if (sortVal) { 
-          currentSortOrder = sortVal; 
-          document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active')); 
-          e.target.classList.add('active'); 
-        }
-        
-        if (filterVal) { 
-          currentFilterType = filterVal; 
-          document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active')); 
-          e.target.classList.add('active'); 
-        }
-        
-        currentPage = 1; 
-        processPhotos();
-        renderGalleryAndPagination();
-      });
-    });
-
-    // Função de Paginação
-    function setupPagination(totalPages) {
-      if (totalPages <= 1) return;
-      
-      const prevBtn = document.createElement('button'); 
-      prevBtn.innerHTML = '&#10094;'; 
-      prevBtn.className = 'nav-btn'; 
-      prevBtn.disabled = currentPage === 1;
-      prevBtn.onclick = () => { 
-        if (currentPage > 1) { 
-          currentPage--; 
-          renderGalleryAndPagination(); 
-          window.scrollTo(0,0); 
-        } 
-      };
-      paginationControls.appendChild(prevBtn);
-
-      for (let i = 1; i <= totalPages; i++) {
-        const pageBtn = document.createElement('button'); 
-        pageBtn.textContent = i; 
-        pageBtn.className = 'page-btn';
-        if (i === currentPage) pageBtn.classList.add('active');
-        
-        pageBtn.onclick = () => { 
-          currentPage = i; 
-          renderGalleryAndPagination(); 
-          window.scrollTo(0,0); 
-        };
-        paginationControls.appendChild(pageBtn);
-      }
-
-      const nextBtn = document.createElement('button'); 
-      nextBtn.innerHTML = '&#10095;'; 
-      nextBtn.className = 'nav-btn'; 
-      nextBtn.disabled = currentPage === totalPages;
-      nextBtn.onclick = () => { 
-        if (currentPage < totalPages) { 
-          currentPage++; 
-          renderGalleryAndPagination(); 
-          window.scrollTo(0,0); 
-        } 
-      };
-      paginationControls.appendChild(nextBtn);
-    }
-
-    // Visualizador Full Screen
-    function showLightboxPhoto(index) {
-      currentLightboxIndex = index; 
-      const photo = filteredPhotos[index]; 
-      if (!photo) return;
-      
-      document.getElementById('lightbox-img').src = photo.url;
-      const lbCaption = document.getElementById('lightbox-caption');
-      lbCaption.innerHTML = `<div>${photo.caption}</div>`; 
-      
-      if (photo.musicLink) {
-        lbCaption.innerHTML += `<a href="${photo.musicLink}" target="_blank" class="lightbox-music-link">Ouvir música 🎵</a>`;
-      }
-      
-      document.getElementById('lightbox-prev').disabled = (index === 0);
-      document.getElementById('lightbox-next').disabled = (index === filteredPhotos.length - 1);
-    }
-
-    function setupLightboxListeners() {
-      document.querySelectorAll('.photo img').forEach(img => {
-        img.addEventListener('click', (e) => {
-          e.stopPropagation(); 
-          if (e.target.parentElement.classList.contains('locked')) {
-            return showToast("Essa lembrança ainda está trancada! ⏳");
-          }
-          const index = parseInt(e.target.getAttribute('data-index-in-page'));
-          showLightboxPhoto(index); 
-          document.getElementById('lightbox').classList.add('visible');
-        });
-      });
-      document.querySelectorAll('.music-link-icon').forEach(icon => icon.addEventListener('click', (e) => e.stopPropagation()));
-    }
-
-    document.querySelector('.close-lightbox').onclick = () => document.getElementById('lightbox').classList.remove('visible');
-    document.getElementById('lightbox').onclick = (e) => { if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('visible'); };
-    document.getElementById('lightbox-prev').onclick = (e) => { e.stopPropagation(); if (currentLightboxIndex > 0) showLightboxPhoto(currentLightboxIndex - 1); };
-    document.getElementById('lightbox-next').onclick = (e) => { e.stopPropagation(); if (currentLightboxIndex < filteredPhotos.length - 1) showLightboxPhoto(currentLightboxIndex + 1); };
-
-    // ---- Login e Acesso ----
-    document.getElementById('enterBtn').onclick = () => {
-      introScreen.classList.add('fade-out'); 
-      createHeartShower(); 
-      
-      setTimeout(() => { 
-        introScreen.style.display = 'none'; 
-        mainContent.classList.remove('hidden'); 
-        
-        // Pega o nosso novo player de áudio
-        const audioPlayer = document.getElementById('spotify-player');
-        
-        // Dá o comando de "Play" assim que ela entra na página
-        if (audioPlayer) {
-            audioPlayer.volume = 0.5; // Começa em 50% de volume para ser suave
-            audioPlayer.play().catch(e => console.log("O navegador pediu para dar play manualmente."));
-        }
-        
-        loadPhotos(); 
-      }, 1000);
-    };
-
-    const loginModal = document.getElementById('login-modal');
-    const senhaInput = document.getElementById('senhaInput');
-    
-    document.getElementById('editBtn').onclick = () => { 
-      loginModal.style.display = 'flex'; 
-      senhaInput.value = ''; 
-      senhaInput.focus(); 
-    };
-    
-    document.getElementById('closeLoginBtn').onclick = () => loginModal.style.display = 'none';
-
-    document.getElementById('confirmLoginBtn').onclick = async () => {
-      const senhaDigitada = senhaInput.value; 
-      const btn = document.getElementById('confirmLoginBtn');
-      btn.disabled = true; 
-      btn.innerText = "Verificando...";
-      
-      try {
-        await auth.signInWithEmailAndPassword('admin@nossocantinho.com', senhaDigitada);
-        editor.classList.toggle('hidden'); 
-        mainContent.classList.toggle('edit-mode-active'); 
-        loginModal.style.display = 'none'; 
-        showToast("Modo de edição liberado! ✨");
-      } catch (error) { 
-        showToast("Chave mestra incorreta 💔"); 
-      } finally { 
-        btn.disabled = false; 
-        btn.innerText = "Acessar Painel"; 
-      }
-    };
-    
-    document.getElementById('forgotPasswordBtn').onclick = () => showToast("Dica: É como eu te chamo carinhosamente 💕");
-
-    // ---- Upload e Cloudinary ----
-    document.getElementById('addPhoto').onclick = () => {
-      const file = document.getElementById('imageInput').files[0];
-      const caption = document.getElementById('captionInput').value;
-      if (!file) return showToast("Selecione uma imagem 💞"); 
-      if (!caption) return showToast("Adicione uma legenda! 💞");
-      
-      const btn = document.getElementById('addPhoto'); 
-      btn.disabled = true; 
-      btn.textContent = 'Enviando...';
-      
-      const reader = new FileReader();
-      reader.onload = e => resizeAndUpload(
-        e.target.result, 
-        caption, 
-        document.getElementById('musicLinkInput').value, 
-        document.getElementById('unlockDateInput').value, 
-        btn
-      );
-      reader.readAsDataURL(file);
-    };
-
-    async function uploadToCloudinary(base64Image) {
-      const formData = new FormData(); 
-      formData.append('file', base64Image); 
-      formData.append('upload_preset', UPLOAD_PRESET);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-      const data = await res.json(); 
-      if (data.secure_url) return data.secure_url; 
-      throw new Error('Upload failed');
-    }
-
-    function resizeAndUpload(dataURL, caption, musicLink, unlockDate, button) {
-      const img = new Image(); 
-      img.src = dataURL;
-      img.onload = async () => {
-        try {
-            let w = img.width, h = img.height;
-            if (w > h && w > 1920) { h *= 1920 / w; w = 1920; } 
-            else if (h > 1080) { w *= 1080 / h; h = 1080; }
-            
-            const canvas = document.createElement('canvas'); 
-            canvas.width = w; 
-            canvas.height = h; 
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            
-            const url = await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.8));
-            
-            await photosCollection.add({ 
-              url: url, 
-              caption: caption, 
-              musicLink: musicLink, 
-              unlockDate: unlockDate || null, 
-              likes: 0, 
-              timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-            });
-            
-            showToast("Memória guardada! 💖"); 
-            createHeartShower(); 
-            document.getElementById('imageInput').value = ''; 
-            document.getElementById('captionInput').value = ''; 
-            document.getElementById('musicLinkInput').value = ''; 
-            document.getElementById('unlockDateInput').value = '';
-            currentPage = 1; 
-            await loadPhotos();
-        } catch (e) { 
-          showToast("Erro no upload."); 
-        } finally { 
-          button.disabled = false; 
-          button.textContent = 'Guardar Momento'; 
-        }
-      };
-    }
-
-    // ---- Ações nos Cartões da Galeria ----
-    gallery.addEventListener('click', async (e) => {
-      // Deletar
-      if (e.target.classList.contains('delete-btn')) { 
-        if (confirm("Apagar lembrança?")) { 
-          try { 
-            await photosCollection.doc(e.target.getAttribute('data-id')).delete(); 
-            showToast("Apagada."); 
-            await loadPhotos(); 
-          } catch (err) { 
-            showToast("Erro."); 
-          } 
-        } 
-      }
-      
-      // Editar
-      if (e.target.classList.contains('edit-btn-card')) { 
-        const photo = photos.find(p => p.id === e.target.getAttribute('data-id')); 
-        if (photo) { 
-          document.getElementById('editPhotoId').value = photo.id; 
-          document.getElementById('editCaptionInput').value = photo.caption || ''; 
-          document.getElementById('editMusicLinkInput').value = photo.musicLink || ''; 
-          document.getElementById('editUnlockDateInput').value = photo.unlockDate || ''; 
-          document.getElementById('edit-photo-modal').style.display = 'flex'; 
-        } 
-      }
-      
-      // Curtir
-      if (e.target.classList.contains('like-btn')) { 
-        e.stopPropagation(); 
-        const btn = e.target; 
-        const photoId = btn.getAttribute('data-id'); 
-        const countSpan = document.getElementById(`like-count-${photoId}`); 
-        btn.classList.add('pop'); 
-        setTimeout(() => btn.classList.remove('pop'), 300); 
-        
-        let currentLikes = parseInt(countSpan.innerText) || 0; 
-        countSpan.innerText = currentLikes + 1; 
-        
-        try { 
-          await photosCollection.doc(photoId).update({ likes: firebase.firestore.FieldValue.increment(1) }); 
-          const photoIndex = photos.findIndex(p => p.id === photoId); 
-          if (photoIndex > -1) photos[photoIndex].likes = currentLikes + 1; 
-        } catch (error) { 
-          countSpan.innerText = currentLikes; 
-          showToast("Erro :("); 
-        } 
-      }
-    });
-
-    document.getElementById('closeEditModalBtn').onclick = () => document.getElementById('edit-photo-modal').style.display = 'none';
-    
-    document.getElementById('saveEditBtn').onclick = async () => {
-      const id = document.getElementById('editPhotoId').value; 
-      const newCaption = document.getElementById('editCaptionInput').value;
-      if (!newCaption) return showToast("Legenda vazia!"); 
-      
-      const btn = document.getElementById('saveEditBtn'); 
-      btn.disabled = true; 
-      btn.innerText = "Salvando...";
-      
-      try { 
-        await photosCollection.doc(id).update({ 
-          caption: newCaption, 
-          musicLink: document.getElementById('editMusicLinkInput').value, 
-          unlockDate: document.getElementById('editUnlockDateInput').value || null 
-        }); 
-        showToast("Atualizada! ✨"); 
-        document.getElementById('edit-photo-modal').style.display = 'none'; 
-        await loadPhotos(); 
-      } catch (error) { 
-        showToast("Erro."); 
-      } finally { 
-        btn.disabled = false; 
-        btn.innerText = "Salvar Alterações"; 
-      }
-    };
-
-    document.getElementById('changeBgBtn').onclick = async () => {
-      const file = document.getElementById('bgImageInput').files[0]; 
-      if (!file) return showToast("Selecione imagem."); 
-      
-      const btn = document.getElementById('changeBgBtn'); 
-      btn.disabled = true; 
-      btn.textContent = 'Aplicando...';
-      
-      const reader = new FileReader(); 
-      reader.onload = async e => { 
-        try { 
-          const resizedUrl = await new Promise(resolve => { 
-            const img = new Image(); 
-            img.onload = async () => { 
-              const canvas = document.createElement('canvas'); 
-              let w = img.width, h = img.height; 
-              if (w > 1920) { h *= 1920 / w; w = 1920; } 
-              canvas.width = w; 
-              canvas.height = h; 
-              canvas.getContext('2d').drawImage(img, 0, 0, w, h); 
-              resolve(await uploadToCloudinary(canvas.toDataURL('image/jpeg', 0.6))); 
-            }; 
-            img.src = e.target.result; 
-          }); 
-          await settingsDoc.set({ backgroundImageUrl: resizedUrl }, { merge: true }); 
-          applyBackground(resizedUrl); 
-          showToast("Fundo alterado!"); 
-          document.getElementById('bgImageInput').value = ''; 
-        } catch (err) { 
-          showToast("Erro."); 
-        } finally { 
-          btn.disabled = false; 
-          btn.textContent = 'Salvar Novo Fundo'; 
-        } 
-      }; 
-      reader.readAsDataURL(file);
-    };
-    
-    document.getElementById('removeBgBtn').onclick = () => { if (confirm("Remover fundo?")) removeBackground(); };
-    document.addEventListener('DOMContentLoaded', loadSettings);
-
-    // =========================================
-    // LÓGICA DO MAPA INTERATIVO (Ler, Injetar e Enigmas)
-    // =========================================
-    
-    // Controladores de Interface do Mapa
-    document.getElementById('openMapBtn').onclick = (e) => { 
-      e.preventDefault(); 
-      document.getElementById('map-modal').style.display = 'flex'; 
-    };
-    
-    document.getElementById('closeMapBtn').onclick = () => { 
-      document.getElementById('map-modal').style.display = 'none'; 
-      document.getElementById('enigma-modal').style.display = 'none'; 
-    };
-    
-    document.getElementById('closeEnigmaBtn').onclick = () => { 
-      document.getElementById('enigma-modal').style.display = 'none'; 
-    };
-
-    let respostaCorretaAtual = "";
-    
-    window.abrirEnigma = function(lugar, pergunta, respostaCerta) {
-        document.getElementById('enigma-title').innerText = "📍 " + lugar;
-        document.getElementById('enigma-question').innerText = pergunta;
-        document.getElementById('enigma-answer').value = "";
-        respostaCorretaAtual = respostaCerta.toLowerCase().trim();
-        document.getElementById('enigma-modal').style.display = 'block';
-    };
-
-    document.getElementById('btn-resolver-enigma').onclick = () => {
-        const tentativa = document.getElementById('enigma-answer').value.toLowerCase().trim();
-        if(tentativa === respostaCorretaAtual) {
-            alert("Parabéns! Você desbloqueou esta memória! 🎉");
-            document.getElementById('enigma-modal').style.display = 'none';
-        } else {
-            alert("Humm... resposta errada. Tente de novo! 🤔");
-        }
-    };
-
-    // Lê os Pinos do Banco ao Carregar a Página
-    document.addEventListener('DOMContentLoaded', carregarPinosDoBanco);
-
-    async function carregarPinosDoBanco() {
-        try {
-            const snapshot = await mapPinsCollection.orderBy('data_criacao', 'desc').get();
-            mapPins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            renderizarListaDePinosEditor();
-            renderizarPinosNoMapa();
-
-        } catch (error) {
-            console.error("Erro ao carregar os pinos:", error);
-        }
-    }
-
-    // =========================================
-    // LÓGICA DO PAINEL DE EDIÇÃO DOS PINOS (Criar, Atualizar, Deletar)
-    // =========================================
-    
-    function renderizarListaDePinosEditor() {
-        const listaDiv = document.getElementById('lista-pinos');
-        if (!listaDiv) return;
-        listaDiv.innerHTML = '';
-
-        if (mapPins.length === 0) {
-            listaDiv.innerHTML = '<span style="color: #ddd; font-size: 0.9em; text-align: center;">Nenhum pino cadastrado ainda.</span>';
-            return;
-        }
-
-        mapPins.forEach(pino => {
-            const item = document.createElement('div');
-            item.style = "display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 5px; font-size: 0.9em;";
-            item.innerHTML = `
-                <span>📍 <b>${pino.cidade}</b></span>
-                <div>
-                    <button onclick="prepararEdicaoPino('${pino.id}')" style="background: #ffbcda; color: #8e1e5c; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Editar</button>
-                    <button onclick="deletarPino('${pino.id}')" style="background: #ff3b3b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">X</button>
-                </div>
-            `;
-            listaDiv.appendChild(item);
-        });
-    }
-
-    function renderizarPinosNoMapa() {
-        const mapaContainer = document.getElementById('mapa-dinamico-container');
-        if (!mapaContainer) return;
-        mapaContainer.innerHTML = ''; 
-        
-        mapPins.forEach(pino => {
-            const pinDiv = document.createElement('div');
-            pinDiv.className = 'map-pin';
-            pinDiv.style.top = pino.posicao_top;
-            pinDiv.style.left = pino.posicao_left;
-            pinDiv.onclick = () => abrirEnigma(pino.cidade, pino.pergunta, pino.resposta_certa);
-            mapaContainer.appendChild(pinDiv);
-        });
-    }
-
-    window.prepararEdicaoPino = function(id) {
-        const pino = mapPins.find(p => p.id === id);
-        if(!pino) return;
-
-        document.getElementById('pin-id').value = pino.id;
-        document.getElementById('pin-cidade').value = pino.cidade;
-        document.getElementById('pin-pergunta').value = pino.pergunta;
-        document.getElementById('pin-resposta').value = pino.resposta_certa;
-        document.getElementById('pin-top').value = pino.posicao_top;
-        document.getElementById('pin-left').value = pino.posicao_left;
-        document.getElementById('pin-recompensa').value = pino.recompensa_url || '';
-
-        document.getElementById('btn-salvar-pin').innerText = "Atualizar Pino ✏️";
-        document.getElementById('btn-cancelar-edicao-pin').style.display = "block";
-    };
-
-    document.getElementById('btn-cancelar-edicao-pin').addEventListener('click', limparFormularioPino);
-
-    function limparFormularioPino() {
-        document.getElementById('pin-id').value = "";
-        document.getElementById('pin-cidade').value = "";
-        document.getElementById('pin-pergunta').value = "";
-        document.getElementById('pin-resposta').value = "";
-        document.getElementById('pin-top').value = "";
-        document.getElementById('pin-left').value = "";
-        document.getElementById('pin-recompensa').value = "";
-        
-        document.getElementById('btn-salvar-pin').innerText = "Salvar Novo Pino 💾";
-        document.getElementById('btn-cancelar-edicao-pin').style.display = "none";
-    }
-
-    window.deletarPino = async function(id) {
-        if(confirm("Tem certeza que deseja apagar este pino para sempre?")) {
-            try {
-                await mapPinsCollection.doc(id).delete();
-                alert("Pino excluído com sucesso!");
-                carregarPinosDoBanco(); 
-            } catch (error) {
-                console.error("Erro ao deletar:", error);
-                alert("Erro de permissão ou conexão ao excluir.");
-            }
-        }
-    };
-
-    const btnSalvarPin = document.getElementById('btn-salvar-pin');
-    if(btnSalvarPin) {
-        btnSalvarPin.addEventListener('click', async () => {
-            const id = document.getElementById('pin-id').value;
-            const cidade = document.getElementById('pin-cidade').value;
-            const pergunta = document.getElementById('pin-pergunta').value;
-            const resposta = document.getElementById('pin-resposta').value;
-            const topPos = document.getElementById('pin-top').value;
-            const leftPos = document.getElementById('pin-left').value;
-            const recompensa = document.getElementById('pin-recompensa').value;
-
-            if (!cidade || !pergunta || !resposta || !topPos || !leftPos) {
-                alert("Por favor, preencha todos os campos obrigatórios do pino!");
-                return;
-            }
-
-            try {
-                btnSalvarPin.innerText = "Processando... ⏳";
-                btnSalvarPin.disabled = true;
-
-                if (id) {
-                    await mapPinsCollection.doc(id).update({
-                        cidade: cidade,
-                        pergunta: pergunta,
-                        resposta_certa: resposta.toLowerCase().trim(),
-                        posicao_top: topPos,
-                        posicao_left: leftPos,
-                        recompensa_url: recompensa || ""
-                    });
-                    alert("Pino atualizado com sucesso no mapa! ✨");
-                } else {
-                    await mapPinsCollection.add({
-                        cidade: cidade,
-                        pergunta: pergunta,
-                        resposta_certa: resposta.toLowerCase().trim(),
-                        posicao_top: topPos,
-                        posicao_left: leftPos,
-                        recompensa_url: recompensa || "",
-                        data_criacao: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    alert("Novo pino adicionado com sucesso no mapa! 🎉");
-                }
-                
-                limparFormularioPino();
-                carregarPinosDoBanco(); 
-
-            } catch (error) {
-                console.error("ERRO AO SALVAR:", error);
-                alert("Ocorreu um erro interno! Olhe a aba Console.");
-            } finally {
-                btnSalvarPin.disabled = false;
-            }
-        });
-    }
-  // =========================================
-// =========================================
-    // MOTOR DO JOGO: LÓGICA DO TAMAGOTCHI + FALA + PRESENTES
-    // =========================================
-    
-    let petStats = { fome: 100, energia: 100, diversao: 100, higiene: 100 };
-    const dataAniversario = new Date('2026-10-29T00:00:00'); 
-
-    const frasesFelizes = [
-        "Amo quando vocês vêm me ver! 💕", 
-        "O amor de vocês me deixa com o coração quentinho.", 
-        "Vocês formam uma dupla melhor que Booth e Brennan! 🦴🕵️‍♂️💕",
-        "Miau! Como foi o dia hoje?"
-    ];
-    const frasesFome = ["Minha barriguinha tá roncando...", "Tem um sachê aí pra mim? 🐟", "Acho que vou desmaiar de fome 😿"];
-    const frasesSono = ["Zzz... Só mais 5 minutinhos...", "Tô piscando devagarzinho 🥱", "Preciso de um colinho pra dormir."];
-    const frasesTriste = ["Tô me sentindo tão sozinho 🧶", "Brinca comigo? Por favorzinho!", "Miau tristinho..."];
-    const frasesSujo = ["Eca, pisei na lama...", "Acho que preciso de um banho 🛁", "Tô fedidinho, miau."];
-
-    function atualizarFalaPet() {
-        const speech = document.getElementById('pet-speech');
-        if (!speech) return;
-        speech.style.animation = 'none';
-        setTimeout(() => speech.style.animation = 'popBubble 0.3s ease-out', 10);
-
-        if (petStats.fome < 30) speech.innerText = frasesFome[Math.floor(Math.random() * frasesFome.length)];
-        else if (petStats.energia < 30) speech.innerText = frasesSono[Math.floor(Math.random() * frasesSono.length)];
-        else if (petStats.diversao < 30) speech.innerText = frasesTriste[Math.floor(Math.random() * frasesTriste.length)];
-        else if (petStats.higiene < 30) speech.innerText = frasesSujo[Math.floor(Math.random() * frasesSujo.length)];
-        else speech.innerText = frasesFelizes[Math.floor(Math.random() * frasesFelizes.length)];
-    }
-
-    function atualizarBarrasPet() {
-        document.getElementById('bar-fome').style.width = petStats.fome + '%';
-        document.getElementById('bar-energia').style.width = petStats.energia + '%';
-        document.getElementById('bar-diversao').style.width = petStats.diversao + '%';
-        document.getElementById('bar-higiene').style.width = petStats.higiene + '%';
-        
-        const display = document.getElementById('pet-display');
-        display.innerText = (petStats.fome < 30 || petStats.energia < 30 || petStats.diversao < 30 || petStats.higiene < 30) ? '😿' : '🐈';
-
-        // MÁGICA DO PRESENTE: Se tudo estiver acima de 90%, o botão aparece!
-        const btnPresente = document.getElementById('btn-presente-gato');
-        if (btnPresente) {
-            if (petStats.fome >= 90 && petStats.energia >= 90 && petStats.diversao >= 90 && petStats.higiene >= 90) {
-                btnPresente.style.display = 'block';
-            } else {
-                btnPresente.style.display = 'none';
-            }
-        }
-    }
-
-    function carregarPet() {
-        const agora = new Date();
-        if (agora >= dataAniversario) {
-            // Em Outubro: Puxará do Firebase
-        } else {
-            const localData = localStorage.getItem('nossoGatinho');
-            if (localData) petStats = JSON.parse(localData);
-        }
-        atualizarBarrasPet();
-    }
-
-    function salvarPet() {
-        const agora = new Date();
-        if (agora >= dataAniversario) {
-            // Em Outubro: Salvará no Firebase
-        } else {
-            localStorage.setItem('nossoGatinho', JSON.stringify(petStats));
-        }
-    }
-
-    // Ações dos Botões
-    document.getElementById('btn-alimentar').onclick = () => { 
-        petStats.fome = Math.min(100, petStats.fome + 30); 
-        atualizarBarrasPet(); salvarPet(); document.getElementById('pet-speech').innerText = "Nhom nhom... Que delícia! 🐟";
-    };
-    
-    document.getElementById('btn-dormir').onclick = () => { 
-        petStats.energia = Math.min(100, petStats.energia + 40); 
-        atualizarBarrasPet(); salvarPet(); document.getElementById('pet-speech').innerText = "Boa noite... Sonhando com sachês 💤";
-    };
-    
-    document.getElementById('btn-brincar').onclick = () => { 
-        petStats.diversao = Math.min(100, petStats.diversao + 35); 
-        petStats.energia = Math.max(0, petStats.energia - 10); 
-        atualizarBarrasPet(); salvarPet(); document.getElementById('pet-speech').innerText = "Pega o ratinho! Pega! 🧶🐾";
-    };
-    
-    document.getElementById('btn-banho').onclick = () => { 
-        petStats.higiene = 100; 
-        atualizarBarrasPet(); salvarPet(); document.getElementById('pet-speech').innerText = "Tô limpinho e cheiroso de novo! 🛁✨";
-    };
-
-    // =========================================
-    // LISTA DE PRESENTES E EVENTOS DO MODAL
-    // =========================================
-    const recompensasDoGato = [
-        "O gatinho encontrou um vale-pizza com borda recheada pra próxima maratona de Bones! 🍕🦴",
-        "Miau! Achei um vale-viagem pra próxima vez que pegar a estrada para São José do Rio Preto. 🛣️💕",
-        "Você desbloqueou um cafuné virtual infinito! 🥰",
-        "Vale 1 beijo super especial! 💋",
-        "Vale pedir para ele fazer uma receita de massa fresquinha esse fim de semana! 🍝",
-        "Miau! Achei esse bilhetinho: 'Você é a melhor parte do meu dia'. 💖"
-    ];
-
-    document.getElementById('btn-presente-gato').onclick = () => {
-        // Sorteia a frase
-        const fraseSorteada = recompensasDoGato[Math.floor(Math.random() * recompensasDoGato.length)];
-        document.getElementById('gift-message').innerText = fraseSorteada;
-        
-        // Abre a telinha
-        document.getElementById('gift-modal').style.display = 'flex';
-        
-        // O gato gasta energia para trazer o presente, pra barrinha cair e não dar pra clicar infinitamente
-        petStats.energia = Math.max(0, petStats.energia - 15);
-        atualizarBarrasPet();
-        salvarPet();
-    };
-
-    document.getElementById('closeGiftBtn').onclick = () => {
-        document.getElementById('gift-modal').style.display = 'none';
-    };
-
-    // O "Coração" do Jogo: O tempo passando
-    setInterval(() => {
-        petStats.fome = Math.max(0, petStats.fome - 2);
-        petStats.energia = Math.max(0, petStats.energia - 1);
-        petStats.diversao = Math.max(0, petStats.diversao - 2);
-        petStats.higiene = Math.max(0, petStats.higiene - 1);
-        atualizarBarrasPet(); salvarPet();
-    }, 60000); 
-
-    carregarPet();
-
-    document.getElementById('pet-fab').addEventListener('click', () => {
-        atualizarFalaPet();
-    });
-// =========================================
-    // ROLETA DO ENCONTRO (SORTEIO 3 EM 1)
-    // =========================================
-    const roletaModal = document.getElementById('roleta-modal');
-    const openRoletaBtn = document.getElementById('openRoletaBtn');
-    const closeRoletaBtn = document.getElementById('closeRoletaBtn');
-    const btnGirar = document.getElementById('btn-girar-roleta');
-    const roletaResultado = document.getElementById('roleta-resultado');
-
-    // Nossas Listas Fixas de Sorteio
-    const listaComidas = ["Pizza de Borda Recheada 🍕", "Rodada de Esfirras 🥟", "Suflê Quentinho 🍮", "Delivery Especial 🥡", "Massa Fresquinha 🍝"];
-    const listaTelas = ["Maratona de Bones 🦴", "Filme de Terror 👻", "Vídeos Engraçados 😂", "Série Nova 🍿"];
-    const listaAtividades = ["Cafuné até dormir 🐈", "Tentar resolver o Cubo Mágico 🧊", "Planejar a ida pra Rio Preto 🛣️", "Dormir agarradinho 💤"];
-
-    // Abrir e Fechar a Janela
-    if (openRoletaBtn && roletaModal && closeRoletaBtn) {
-        openRoletaBtn.addEventListener('click', () => {
-            roletaModal.style.display = 'flex';
-            roletaResultado.innerHTML = '<span style="color: #666; font-style: italic;">Clique no botão abaixo para sortear o nosso encontro perfeito!</span>';
-        });
-        closeRoletaBtn.addEventListener('click', () => {
-            roletaModal.style.display = 'none';
-        });
-    }
-
-    // A Mágica do Sorteio
-    if (btnGirar) {
-        btnGirar.addEventListener('click', () => {
-            // Efeito de girando
-            btnGirar.disabled = true;
-            btnGirar.innerText = "Girando... 🔄";
-            roletaResultado.innerHTML = '<span style="font-weight: bold; font-size: 2em; animation: pulse 0.5s infinite;">🎰 🎰 🎰</span>';
-
-            // Espera 1,5 segundos para fazer suspense e depois sorteia
-            setTimeout(() => {
-                const comidaSorteada = listaComidas[Math.floor(Math.random() * listaComidas.length)];
-                const telaSorteada = listaTelas[Math.floor(Math.random() * listaTelas.length)];
-                const atividadeSorteada = listaAtividades[Math.floor(Math.random() * listaAtividades.length)];
-                
-                roletaResultado.innerHTML = `
-                    <div style="font-weight: bold;">🍽️ ${comidaSorteada}</div>
-                    <div style="font-weight: bold;">📺 ${telaSorteada}</div>
-                    <div style="font-weight: bold;">🐾 ${atividadeSorteada}</div>
-                `;
-                
-                btnGirar.disabled = false;
-                btnGirar.innerText = "Girar de Novo 🎲";
-                createHeartShower(); // Aproveita a chuva de corações que já existe no site!
-            }, 1500);
-        });
-    }
-    // =========================================
-    // ABRIR E FECHAR O TAMAGOTCHI (BLINDADO)
-    // =========================================
-    document.addEventListener('DOMContentLoaded', () => {
-        const petFab = document.getElementById('pet-fab');
-        const petModal = document.getElementById('tamagotchi-modal');
-        const closePetBtn = document.getElementById('closePetBtn');
-        
-        if (petFab && petModal && closePetBtn) {
-            petFab.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                petModal.style.display = 'flex';
-            });
-            
-            closePetBtn.addEventListener('click', () => {
-                petModal.style.display = 'none';
-            });
-        }
-    });
-    // =========================================
-    // LÓGICA DO EASTER EGG (5 CLIQUES NO GATO)
-    // =========================================
-    const catFaceDisplay = document.getElementById('pet-display');
-    const catDiaryModal = document.getElementById('cat-diary-modal');
-    const closeDiaryBtn = document.getElementById('closeDiaryBtn');
-
-    let clickCount = 0;
-    let clickTimer;
-
-    if (catFaceDisplay && catDiaryModal && closeDiaryBtn) {
-        
-        catFaceDisplay.addEventListener('click', (e) => {
-            e.stopPropagation(); // Impede que o clique faça outra coisa sem querer
-            clickCount++;
-
-            // Se for o primeiro clique, liga o cronômetro (2 segundos para dar 5 cliques)
-            if (clickCount === 1) {
-                clickTimer = setTimeout(() => {
-                    clickCount = 0; // Se demorar muito, zera o contador
-                }, 2000);
-            }
-
-            // Se chegar a 5 cliques antes do tempo acabar... BINGO!
-            if (clickCount >= 5) {
-                clearTimeout(clickTimer); // Para o cronômetro
-                clickCount = 0; // Zera para a próxima vez
-                catDiaryModal.style.display = 'flex'; // Mostra o Diário!
-            }
-        });
-
-        // Fechar o diário
-        closeDiaryBtn.addEventListener('click', () => {
-            catDiaryModal.style.display = 'none';
-        });
-    }
-  </script>
+  <!-- ═════════════════════════════════════════════════════════════
+       4. ELEMENTOS FLUTUANTES
+       ═════════════════════════════════════════════════════════════ -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- [🎵 MÚSICA] Player de fundo — a URL do MP3 fica em js/config.js -->
+  <audio id="music-player" controls loop preload="none"></audio>
+
+  <button id="pet-fab" title="Cuidar do nosso gatinho" aria-label="Abrir o gatinho">🐱</button>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       5. SCRIPTS (a ordem importa!)
+       ═════════════════════════════════════════════════════════════ -->
+  <!-- [🔥 FIREBASE] SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+  <!-- Código do site -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/music.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/background.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/pet.js"></script>
+  <script src="js/roleta.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
