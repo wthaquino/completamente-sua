@@ -1,38 +1,22 @@
 /* ==================================================================
-   TAMAGOTCHI (O GATINHO) + PRESENTES + DIÁRIO SECRETO
-   ------------------------------------------------------------------
-   [💾 LOCAL]     antes de PET_DATA_COMPARTILHADO (config.js): cada
-                  aparelho tem o seu gato, salvo no localStorage.
-   [🔥 FIREBASE]  a partir dessa data: o gato é o mesmo para vocês duas,
-                  salvo no documento pet/nossoGatinho.
-
-   CORRIGIDO: antes, a partir de 29/10 o gato simplesmente parava de
-   salvar (o trecho do Firebase estava vazio).
+   GATINHO (TAMAGOTCHI) + PRESENTES + DIÁRIO SECRETO
+   [💾 LOCAL] antes de PET_DATA_COMPARTILHADO · [🔥 pet/nossoGatinho] depois
    ================================================================== */
 
-const PET_STORAGE_KEY = 'nossoGatinho';
+const STATUS = ['fome', 'energia', 'diversao', 'higiene'];
 let petStats = { fome: 100, energia: 100, diversao: 100, higiene: 100 };
-let salvarRemotoTimer;
+let salvarTimer;
+const compartilhado = () => new Date() >= PET_DATA_COMPARTILHADO;
 
-function petCompartilhado() {
-  return new Date() >= PET_DATA_COMPARTILHADO;
-}
+const FALAS = {
+  feliz:    ["Amo quando vocês vêm me ver! 💕", "O amor de vocês me deixa com o coração quentinho.", "Vocês formam uma dupla melhor que Booth e Brennan! 🦴🕵️‍♂️💕", "Miau! Como foi o dia hoje?"],
+  fome:     ["Minha barriguinha tá roncando...", "Tem um sachê aí pra mim? 🐟", "Acho que vou desmaiar de fome 😿"],
+  energia:  ["Zzz... Só mais 5 minutinhos...", "Tô piscando devagarzinho 🥱", "Preciso de um colinho pra dormir."],
+  diversao: ["Tô me sentindo tão sozinho 🧶", "Brinca comigo? Por favorzinho!", "Miau tristinho..."],
+  higiene:  ["Eca, pisei na lama...", "Acho que preciso de um banho 🛁", "Tô fedidinho, miau."]
+};
 
-
-/* ─── Falas ─── */
-const frasesFelizes = [
-  "Amo quando vocês vêm me ver! 💕",
-  "O amor de vocês me deixa com o coração quentinho.",
-  "Vocês formam uma dupla melhor que Booth e Brennan! 🦴🕵️‍♂️💕",
-  "Miau! Como foi o dia hoje?"
-];
-const frasesFome   = ["Minha barriguinha tá roncando...", "Tem um sachê aí pra mim? 🐟", "Acho que vou desmaiar de fome 😿"];
-const frasesSono   = ["Zzz... Só mais 5 minutinhos...", "Tô piscando devagarzinho 🥱", "Preciso de um colinho pra dormir."];
-const frasesTriste = ["Tô me sentindo tão sozinho 🧶", "Brinca comigo? Por favorzinho!", "Miau tristinho..."];
-const frasesSujo   = ["Eca, pisei na lama...", "Acho que preciso de um banho 🛁", "Tô fedidinho, miau."];
-
-/* ─── Presentes (aparecem quando tudo está >= 90%) ─── */
-const recompensasDoGato = [
+const PRESENTES = [
   "O gatinho encontrou um vale-pizza com borda recheada pra próxima maratona de Bones! 🍕🦴",
   "Miau! Achei um vale-viagem pra próxima vez que pegar a estrada para São José do Rio Preto. 🛣️💕",
   "Você desbloqueou um cafuné virtual infinito! 🥰",
@@ -41,75 +25,51 @@ const recompensasDoGato = [
   "Miau! Achei esse bilhetinho: 'Você é a melhor parte do meu dia'. 💖"
 ];
 
+// [status, quanto muda, fala]
+const ACOES = {
+  'btn-alimentar': [{ fome: +30 },                  "Nhom nhom... Que delícia! 🐟"],
+  'btn-dormir':    [{ energia: +40 },               "Boa noite... Sonhando com sachês 💤"],
+  'btn-brincar':   [{ diversao: +35, energia: -10 }, "Pega o ratinho! Pega! 🧶🐾"],
+  'btn-banho':     [{ higiene: +100 },              "Tô limpinho e cheiroso de novo! 🛁✨"]
+};
 
-/* ─── Carregar e salvar ─── */
 
-// Garante que os valores são números de 0 a 100
-function validarStats(dados) {
-  const limpo = { ...petStats };
-  ['fome', 'energia', 'diversao', 'higiene'].forEach(k => {
+/* ─── Carregar / salvar ─── */
+function aplicarStats(dados) {
+  STATUS.forEach(k => {
     const n = Number(dados?.[k]);
-    if (!isNaN(n)) limpo[k] = Math.min(100, Math.max(0, n));
+    if (!isNaN(n)) petStats[k] = Math.min(100, Math.max(0, n));
   });
-  return limpo;
-}
-
-function lerLocal() {
-  try {
-    const salvo = localStorage.getItem(PET_STORAGE_KEY);
-    return salvo ? JSON.parse(salvo) : null;
-  } catch {
-    return null;
-  }
 }
 
 async function carregarPet() {
-  let dados = lerLocal();
-
-  if (petCompartilhado()) {
-    try {
-      const doc = await petDoc.get();
-      if (doc.exists) dados = doc.data().stats;
-    } catch (error) {
-      console.error('Não consegui carregar o gato do Firebase:', error);
-    }
+  try { aplicarStats(JSON.parse(localStorage.getItem('nossoGatinho'))); } catch {}
+  if (compartilhado()) {
+    try { aplicarStats((await petDoc.get()).data()?.stats); } catch (e) { console.error(e); }
   }
-
-  if (dados) petStats = validarStats(dados);
-  atualizarBarrasPet();
+  atualizarPet();
 }
 
 function salvarPet() {
-  try { localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(petStats)); } catch { /* modo anônimo */ }
+  try { localStorage.setItem('nossoGatinho', JSON.stringify(petStats)); } catch {}
+  if (!compartilhado()) return;
+  clearTimeout(salvarTimer);                              // grava 3s depois da última mudança
+  salvarTimer = setTimeout(() =>
+    petDoc.set({ stats: petStats, atualizadoEm: FieldValue.serverTimestamp() }).catch(console.error), 3000);
+}
 
-  if (petCompartilhado()) {
-    // Espera 3s sem mudanças antes de gravar (evita gravar a cada clique)
-    clearTimeout(salvarRemotoTimer);
-    salvarRemotoTimer = setTimeout(() => {
-      petDoc.set({
-        stats: petStats,
-        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-      }).catch(error => console.error('Erro ao salvar o gato:', error));
-    }, 3000);
-  }
+function mudar(variacao) {
+  Object.entries(variacao).forEach(([k, v]) => aplicarStats({ [k]: petStats[k] + v }));
+  atualizarPet();
+  salvarPet();
 }
 
 
 /* ─── Tela ─── */
-function algumStatusBaixo() {
-  return Object.values(petStats).some(v => v < 30);
-}
-
-function atualizarBarrasPet() {
-  $('bar-fome').style.width     = petStats.fome     + '%';
-  $('bar-energia').style.width  = petStats.energia  + '%';
-  $('bar-diversao').style.width = petStats.diversao + '%';
-  $('bar-higiene').style.width  = petStats.higiene  + '%';
-
-  $('pet-display').textContent = algumStatusBaixo() ? '😿' : '🐈';
-
-  const tudoAlto = Object.values(petStats).every(v => v >= 90);
-  $('btn-presente-gato').classList.toggle('hidden', !tudoAlto);
+function atualizarPet() {
+  STATUS.forEach(k => $(`bar-${k}`).style.width = petStats[k] + '%');
+  $('pet-display').textContent = STATUS.some(k => petStats[k] < 30) ? '😿' : '🐈';
+  $('btn-presente-gato').classList.toggle('hidden', !STATUS.every(k => petStats[k] >= 90));
 }
 
 function falar(texto) {
@@ -120,89 +80,31 @@ function falar(texto) {
   balao.style.animation = '';
 }
 
-function atualizarFalaPet() {
-  if      (petStats.fome     < 30) falar(sortear(frasesFome));
-  else if (petStats.energia  < 30) falar(sortear(frasesSono));
-  else if (petStats.diversao < 30) falar(sortear(frasesTriste));
-  else if (petStats.higiene  < 30) falar(sortear(frasesSujo));
-  else                             falar(sortear(frasesFelizes));
-}
 
+/* ─── Eventos ─── */
+Object.entries(ACOES).forEach(([id, [variacao, fala]]) => {
+  $(id).onclick = () => { mudar(variacao); falar(fala); };
+});
 
-/* ─── Ações ─── */
-function acaoPet(alterar, fala) {
-  alterar();
-  atualizarBarrasPet();
-  salvarPet();
-  falar(fala);
-}
-
-$('btn-alimentar').addEventListener('click', () => acaoPet(
-  () => { petStats.fome = Math.min(100, petStats.fome + 30); },
-  "Nhom nhom... Que delícia! 🐟"
-));
-
-$('btn-dormir').addEventListener('click', () => acaoPet(
-  () => { petStats.energia = Math.min(100, petStats.energia + 40); },
-  "Boa noite... Sonhando com sachês 💤"
-));
-
-$('btn-brincar').addEventListener('click', () => acaoPet(
-  () => {
-    petStats.diversao = Math.min(100, petStats.diversao + 35);
-    petStats.energia  = Math.max(0,   petStats.energia  - 10);
-  },
-  "Pega o ratinho! Pega! 🧶🐾"
-));
-
-$('btn-banho').addEventListener('click', () => acaoPet(
-  () => { petStats.higiene = 100; },
-  "Tô limpinho e cheiroso de novo! 🛁✨"
-));
-
-// Presente — gasta energia para não abrir infinitas vezes
-$('btn-presente-gato').addEventListener('click', () => {
-  $('gift-message').textContent = sortear(recompensasDoGato);
+$('btn-presente-gato').onclick = () => {
+  $('gift-message').textContent = sortear(PRESENTES);
   openModal('gift-modal');
-  petStats.energia = Math.max(0, petStats.energia - 15);
-  atualizarBarrasPet();
-  salvarPet();
-});
+  mudar({ energia: -15 });                                // não dá pra abrir infinitas vezes
+};
 
-
-/* ─── O tempo passando (a cada 1 minuto com a página aberta) ─── */
-setInterval(() => {
-  petStats.fome     = Math.max(0, petStats.fome     - 2);
-  petStats.energia  = Math.max(0, petStats.energia  - 1);
-  petStats.diversao = Math.max(0, petStats.diversao - 2);
-  petStats.higiene  = Math.max(0, petStats.higiene  - 1);
-  atualizarBarrasPet();
-  salvarPet();
-}, 60000);
-
-
-/* ─── Abrir o gato (botão flutuante) ─── */
-$('pet-fab').addEventListener('click', async () => {
-  if (petCompartilhado()) await carregarPet();   // pega o estado mais novo
-  atualizarFalaPet();
+$('pet-fab').onclick = async () => {
+  if (compartilhado()) await carregarPet();
+  const baixo = STATUS.find(k => petStats[k] < 30);
+  falar(sortear(FALAS[baixo || 'feliz']));
   openModal('tamagotchi-modal');
-});
+};
 
+// O tempo passando (1 min com a página aberta)
+setInterval(() => mudar({ fome: -2, energia: -1, diversao: -2, higiene: -1 }), 60000);
 
-/* ─── Easter egg: 5 cliques rápidos no gato → diário secreto ─── */
-let cliquesNoGato = 0;
-let timerCliques;
-
-$('pet-display').addEventListener('click', () => {
-  cliquesNoGato++;
-
-  if (cliquesNoGato === 1) {
-    timerCliques = setTimeout(() => { cliquesNoGato = 0; }, 2000);
-  }
-
-  if (cliquesNoGato >= 5) {
-    clearTimeout(timerCliques);
-    cliquesNoGato = 0;
-    openModal('cat-diary-modal');
-  }
-});
+// Easter egg: 5 cliques em 2s no gato → diário secreto
+let cliques = 0;
+$('pet-display').onclick = () => {
+  if (++cliques === 1) setTimeout(() => cliques = 0, 2000);
+  if (cliques === 5) openModal('cat-diary-modal');
+};

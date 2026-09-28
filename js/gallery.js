@@ -1,249 +1,134 @@
 /* ==================================================================
-   [📷 FOTOS] GALERIA DE LEMBRANÇAS   ·   [🔥 FIREBASE photos]
-   ------------------------------------------------------------------
-   Fluxo:  loadPhotos()  →  processPhotos()  →  renderGallery()
-           (Firestore)      (filtro/ordem)      (desenha a página)
+   [📷 FOTOS] GALERIA   ·   [🔥 FIREBASE photos]
+   loadPhotos() → processPhotos() → renderGallery()
    ================================================================== */
 
-let photos         = [];   // tudo que veio do Firestore
-let filteredPhotos = [];   // depois do filtro + ordenação
-let currentPage    = 1;
-let currentSortOrder  = 'desc';  // 'desc' | 'asc'
-let currentFilterType = 'all';   // 'all' | 'unlocked' | 'locked'
+let photos = [];           // do Firestore, mais recentes primeiro
+let filteredPhotos = [];   // após filtro + ordem
+let currentPage = 1;
+let ordem  = 'desc';       // 'desc' | 'asc'
+let filtro = 'all';        // 'all' | 'unlocked' | 'locked'
 
-const gallery            = $('gallery');
-const paginationControls = $('pagination-controls');
-
-
-/* ─── Regras da cápsula do tempo ─── */
-function isPhotoLocked(photo) {
-  return Boolean(photo.unlockDate) && photo.unlockDate > hojeLocal();
-}
+const gallery = $('gallery');
+const isPhotoLocked = (p) => Boolean(p.unlockDate) && p.unlockDate > hojeLocal();
 
 
-/* ─── 1. Carregar do Firestore ─── */
 async function loadPhotos() {
   try {
-    const snapshot = await photosCollection.orderBy('timestamp', 'desc').get();
-    photos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snap = await photosCollection.orderBy('timestamp', 'desc').get();
+    photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     processPhotos();
     renderGallery();
-  } catch (error) {
-    console.error('Erro ao carregar fotos:', error);
+  } catch (e) {
+    console.error(e);
     showToast('Erro ao carregar fotos.');
   }
 }
 
-
-/* ─── 2. Filtrar e ordenar ─── */
 function processPhotos() {
-  filteredPhotos = photos.filter(photo => {
-    const locked = isPhotoLocked(photo);
-    if (currentFilterType === 'unlocked') return !locked;
-    if (currentFilterType === 'locked')   return locked;
-    return true;
-  });
-
-  filteredPhotos.sort((a, b) => {
-    const timeA = a.timestamp ? a.timestamp.toMillis() : Date.now();
-    const timeB = b.timestamp ? b.timestamp.toMillis() : Date.now();
-    return currentSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-  });
+  filteredPhotos = photos.filter(p =>
+    filtro === 'all' || (filtro === 'locked') === isPhotoLocked(p)
+  );
+  if (ordem === 'asc') filteredPhotos.reverse();
 }
 
-
-/* ─── 3. Desenhar ─── */
 function renderGallery() {
-  gallery.innerHTML = '';
-  paginationControls.innerHTML = '';
-
-  if (filteredPhotos.length === 0) {
-    const vazio = document.createElement('div');
-    vazio.className = 'gallery-empty';
-    vazio.textContent = 'Nenhuma memória encontrada.';
-    gallery.appendChild(vazio);
-    return;
-  }
-
-  const totalPages = Math.ceil(filteredPhotos.length / FOTOS_POR_PAGINA);
-  currentPage = Math.min(Math.max(currentPage, 1), totalPages);
-
+  const paginas = Math.ceil(filteredPhotos.length / FOTOS_POR_PAGINA);
+  currentPage = Math.min(Math.max(currentPage, 1), paginas || 1);
   const inicio = (currentPage - 1) * FOTOS_POR_PAGINA;
-  filteredPhotos
-    .slice(inicio, inicio + FOTOS_POR_PAGINA)
-    .forEach((photo, i) => gallery.appendChild(criarCardFoto(photo, inicio + i, i)));
 
-  renderPagination(totalPages);
+  gallery.replaceChildren(
+    ...(filteredPhotos.length
+      ? filteredPhotos.slice(inicio, inicio + FOTOS_POR_PAGINA).map((p, i) => criarCard(p, inicio + i, i))
+      : [el('div', { className: 'gallery-empty', textContent: 'Nenhuma memória encontrada.' })])
+  );
+  renderPagination(paginas);
 }
 
-/* Cria UM card. CORRIGIDO: textos entram com textContent (antes era
-   innerHTML, que permitia injetar código pela legenda) e o link de
-   música passa por safeUrl().                                        */
-function criarCardFoto(photo, indexNaLista, ordemAnimacao) {
+function criarCard(photo, index, ordemAnimacao) {
   const locked = isPhotoLocked(photo);
-
-  const card = document.createElement('div');
-  card.className = 'photo' + (locked ? ' locked' : '');
+  const card = el('div', { className: 'photo' + (locked ? ' locked' : '') });
   card.style.animationDelay = `${ordemAnimacao * 0.15}s`;
 
-  // Botões do modo edição (ações tratadas em admin.js)
+  // Botões do modo edição (ações em admin.js)
   card.append(
-    criarBotaoAdmin('delete', '×',  'Apagar lembrança', photo.id),
-    criarBotaoAdmin('edit',   '✏️', 'Editar lembrança', photo.id)
+    el('button', { className: 'card-admin-btn delete', textContent: '×',  ariaLabel: 'Apagar', dataset: { action: 'delete', id: photo.id } }),
+    el('button', { className: 'card-admin-btn edit',   textContent: '✏️', ariaLabel: 'Editar', dataset: { action: 'edit',   id: photo.id } })
   );
 
-  // Imagem — CORRIGIDO: a cápsula usa uma versão borrada vinda do
-  // Cloudinary; a URL da foto real não vai para a página.
   const src = locked ? cloudinaryBlurUrl(photo.url) : photo.url;
-  if (src) {
-    const img = document.createElement('img');
-    img.src = src;
-    img.alt = locked ? 'Lembrança trancada' : 'Lembrança';
-    img.loading = 'lazy';
-    img.dataset.action = 'open';
-    img.dataset.index  = indexNaLista;
-    card.appendChild(img);
-  } else {
-    card.classList.add('no-preview');
-  }
+  if (src) card.append(el('img', { src, alt: 'Lembrança', loading: 'lazy', dataset: { action: 'open', index } }));
+  else     card.classList.add('no-preview');
 
-  if (locked) {
-    const cadeado = document.createElement('div');
-    cadeado.className = 'lock-icon';
-    cadeado.textContent = '🔒';
-    card.appendChild(cadeado);
-  }
+  if (locked) card.append(el('div', { className: 'lock-icon', textContent: '🔒' }));
 
-  // Legenda
-  const caption = document.createElement('div');
-  caption.className = 'caption';
-
-  const content = document.createElement('div');
-  content.className = 'caption-content';
-
-  const texto = document.createElement('span');
-  texto.textContent = locked
-    ? `Mistério... Disponível em ${dataBr(photo.unlockDate)} ⏳`
-    : photo.caption;
-  content.appendChild(texto);
-
-  // [🎵 MÚSICA] link do Spotify da foto
-  const musica = safeUrl(photo.musicLink);
+  const legenda = el('div', { className: 'caption-content' },
+    el('span', { textContent: locked ? `Mistério... Disponível em ${dataBr(photo.unlockDate)} ⏳` : photo.caption })
+  );
+  const musica = safeUrl(photo.musicLink);                     // [🎵 MÚSICA]
   if (!locked && musica) {
-    const link = document.createElement('a');
-    link.href = musica;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.className = 'music-link-icon';
-    link.textContent = '🎵';
-    link.setAttribute('aria-label', 'Ouvir a música desta lembrança');
-    content.appendChild(link);
+    legenda.append(el('a', { href: musica, target: '_blank', rel: 'noopener', className: 'music-link-icon', textContent: '🎵', ariaLabel: 'Ouvir música' }));
   }
-  caption.appendChild(content);
 
-  // Curtidas
-  const like = document.createElement('div');
-  like.className = 'like-container';
-  like.innerHTML = `<button class="like-btn" data-action="like" aria-label="Curtir">❤️</button><span class="like-count"></span>`;
-  like.querySelector('.like-btn').dataset.id = photo.id;
-  like.querySelector('.like-count').textContent = photo.likes || 0;
-  caption.appendChild(like);
-
-  card.appendChild(caption);
+  card.append(el('div', { className: 'caption' },
+    legenda,
+    el('div', { className: 'like-container' },
+      el('button', { className: 'like-btn', textContent: '❤️', ariaLabel: 'Curtir', dataset: { action: 'like', id: photo.id } }),
+      el('span',   { className: 'like-count', textContent: photo.likes || 0 })
+    )
+  ));
   return card;
 }
 
-function criarBotaoAdmin(tipo, simbolo, rotulo, photoId) {
-  const btn = document.createElement('button');
-  btn.className = `card-admin-btn ${tipo}`;
-  btn.textContent = simbolo;
-  btn.setAttribute('aria-label', rotulo);
-  btn.dataset.action = tipo;
-  btn.dataset.id = photoId;
-  return btn;
+function renderPagination(paginas) {
+  const ir = (p) => { currentPage = p; renderGallery(); $('gallery-controls').scrollIntoView({ behavior: 'smooth' }); };
+  const botao = (html, className, disabled, onclick) => Object.assign(el('button', { className, disabled, onclick }), { innerHTML: html });
+
+  $('pagination-controls').replaceChildren(...(paginas <= 1 ? [] : [
+    botao('&#10094;', 'nav-btn', currentPage === 1, () => ir(currentPage - 1)),
+    ...Array.from({ length: paginas }, (_, i) =>
+      botao(i + 1, 'page-btn' + (i + 1 === currentPage ? ' active' : ''), false, () => ir(i + 1))),
+    botao('&#10095;', 'nav-btn', currentPage === paginas, () => ir(currentPage + 1))
+  ]));
 }
 
 
-/* ─── Paginação ─── */
-function goToPage(page) {
-  currentPage = page;
+/* ─── Filtros / ordenação ─── */
+document.querySelectorAll('.control-btn').forEach(btn => btn.addEventListener('click', () => {
+  const grupo = btn.dataset.sort ? 'sort' : 'filter';
+  document.querySelectorAll(`[data-${grupo}]`).forEach(b => b.classList.toggle('active', b === btn));
+  if (btn.dataset.sort) ordem  = btn.dataset.sort;
+  else                  filtro = btn.dataset.filter;
+  currentPage = 1;
+  processPhotos();
   renderGallery();
-  $('gallery-controls').scrollIntoView({ behavior: 'smooth' });
-}
-
-function renderPagination(totalPages) {
-  if (totalPages <= 1) return;
-
-  const criar = (html, classe, desativado, aoClicar) => {
-    const b = document.createElement('button');
-    b.innerHTML = html;
-    b.className = classe;
-    b.disabled = desativado;
-    b.onclick = aoClicar;
-    paginationControls.appendChild(b);
-    return b;
-  };
-
-  criar('&#10094;', 'nav-btn', currentPage === 1, () => goToPage(currentPage - 1));
-  for (let i = 1; i <= totalPages; i++) {
-    criar(String(i), 'page-btn' + (i === currentPage ? ' active' : ''), false, () => goToPage(i));
-  }
-  criar('&#10095;', 'nav-btn', currentPage === totalPages, () => goToPage(currentPage + 1));
-}
+}));
 
 
-/* ─── Botões de filtro / ordenação ─── */
-document.querySelectorAll('.control-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const { sort, filter } = btn.dataset;
-
-    if (sort) {
-      currentSortOrder = sort;
-      document.querySelectorAll('[data-sort]').forEach(b => b.classList.toggle('active', b === btn));
-    }
-    if (filter) {
-      currentFilterType = filter;
-      document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
-    }
-
-    currentPage = 1;
-    processPhotos();
-    renderGallery();
-  });
-});
-
-
-/* ─── Cliques dentro da galeria (um listener só) ─── */
+/* ─── Cliques nos cards ─── */
 gallery.addEventListener('click', (e) => {
   const alvo = e.target.closest('[data-action]');
   if (!alvo) return;
-
-  switch (alvo.dataset.action) {
-    case 'open':   abrirLightbox(Number(alvo.dataset.index)); break;
-    case 'like':   curtirFoto(alvo);                          break;
-    case 'delete': excluirFoto(alvo.dataset.id);              break;  // admin.js
-    case 'edit':   abrirEdicaoFoto(alvo.dataset.id);          break;  // admin.js
-  }
+  const { action, id, index } = alvo.dataset;
+  if (action === 'open')   abrirLightbox(Number(index));
+  if (action === 'like')   curtirFoto(alvo);
+  if (action === 'delete') excluirFoto(id);        // admin.js
+  if (action === 'edit')   abrirEdicaoFoto(id);    // admin.js
 });
 
-
-/* ─── Curtir ───
-   Atualiza a tela na hora e grava no Firestore (desfaz se falhar).
-   As regras do Firestore só deixam visitantes somarem +1 em "likes". */
 async function curtirFoto(btn) {
-  const photoId  = btn.dataset.id;
   const contador = btn.nextElementSibling;
-  const atual    = parseInt(contador.textContent, 10) || 0;
+  const atual = Number(contador.textContent) || 0;
 
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 300);
   contador.textContent = atual + 1;
 
   try {
-    await photosCollection.doc(photoId).update({ likes: firebase.firestore.FieldValue.increment(1) });
-    const photo = photos.find(p => p.id === photoId);
-    if (photo) photo.likes = atual + 1;
-  } catch (error) {
+    await photosCollection.doc(btn.dataset.id).update({ likes: FieldValue.increment(1) });
+    const foto = photos.find(p => p.id === btn.dataset.id);
+    if (foto) foto.likes = atual + 1;
+  } catch {
     contador.textContent = atual;
     showToast('Erro ao curtir :(');
   }
@@ -251,14 +136,12 @@ async function curtirFoto(btn) {
 
 
 /* ==================================================================
-   LIGHTBOX (FOTO EM TELA CHEIA)   [📷 FOTOS] [🎵 MÚSICA]
-   CORRIGIDO: as setas agora pulam as fotos trancadas.
-   Extra: setas do teclado e arrastar para o lado no celular.
+   LIGHTBOX — pula fotos trancadas; setas do teclado e swipe no celular
    ================================================================== */
 let lightboxIndex = 0;
 
-function indiceLiberado(inicio, direcao) {
-  for (let i = inicio; i >= 0 && i < filteredPhotos.length; i += direcao) {
+function indiceLiberado(de, passo) {
+  for (let i = de; i >= 0 && i < filteredPhotos.length; i += passo) {
     if (!isPhotoLocked(filteredPhotos[i])) return i;
   }
   return -1;
@@ -267,45 +150,29 @@ function indiceLiberado(inicio, direcao) {
 function abrirLightbox(index) {
   const photo = filteredPhotos[index];
   if (!photo) return;
-
-  if (isPhotoLocked(photo)) {
-    showToast('Essa lembrança ainda está trancada! ⏳');
-    return;
-  }
+  if (isPhotoLocked(photo)) return showToast('Essa lembrança ainda está trancada! ⏳');
 
   lightboxIndex = index;
   $('lightbox-img').src = photo.url;
 
-  const legenda = $('lightbox-caption');
-  legenda.innerHTML = '';
-  const texto = document.createElement('div');
-  texto.textContent = photo.caption;
-  legenda.appendChild(texto);
-
-  const musica = safeUrl(photo.musicLink);   // [🎵 MÚSICA]
-  if (musica) {
-    const link = document.createElement('a');
-    link.href = musica;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.className = 'lightbox-music-link';
-    link.textContent = 'Ouvir música 🎵';
-    legenda.appendChild(link);
-  }
+  const musica = safeUrl(photo.musicLink);                     // [🎵 MÚSICA]
+  $('lightbox-caption').replaceChildren(
+    el('div', { textContent: photo.caption }),
+    ...(musica ? [el('a', { href: musica, target: '_blank', rel: 'noopener', className: 'lightbox-music-link', textContent: 'Ouvir música 🎵' })] : [])
+  );
 
   $('lightbox-prev').disabled = indiceLiberado(index - 1, -1) === -1;
   $('lightbox-next').disabled = indiceLiberado(index + 1, +1) === -1;
-
   openModal('lightbox');
 }
 
-function navegarLightbox(direcao) {
-  const destino = indiceLiberado(lightboxIndex + direcao, direcao);
+function navegarLightbox(passo) {
+  const destino = indiceLiberado(lightboxIndex + passo, passo);
   if (destino !== -1) abrirLightbox(destino);
 }
 
-$('lightbox-prev').addEventListener('click', (e) => { e.stopPropagation(); navegarLightbox(-1); });
-$('lightbox-next').addEventListener('click', (e) => { e.stopPropagation(); navegarLightbox(+1); });
+$('lightbox-prev').onclick = () => navegarLightbox(-1);
+$('lightbox-next').onclick = () => navegarLightbox(+1);
 
 document.addEventListener('keydown', (e) => {
   if (!$('lightbox').classList.contains('open')) return;
@@ -313,12 +180,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') navegarLightbox(+1);
 });
 
-// Arrastar para o lado (celular)
-let toqueInicioX = null;
-$('lightbox').addEventListener('touchstart', (e) => { toqueInicioX = e.touches[0].clientX; }, { passive: true });
+let toqueX = null;
+$('lightbox').addEventListener('touchstart', (e) => { toqueX = e.touches[0].clientX; }, { passive: true });
 $('lightbox').addEventListener('touchend', (e) => {
-  if (toqueInicioX === null) return;
-  const distancia = e.changedTouches[0].clientX - toqueInicioX;
-  toqueInicioX = null;
-  if (Math.abs(distancia) > 50) navegarLightbox(distancia < 0 ? +1 : -1);
+  const d = e.changedTouches[0].clientX - (toqueX ?? e.changedTouches[0].clientX);
+  toqueX = null;
+  if (Math.abs(d) > 50) navegarLightbox(d < 0 ? +1 : -1);
 });

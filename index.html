@@ -1,21 +1,8 @@
 <!DOCTYPE html>
 <!--
   NOSSO CANTINHO 💕
-  ─────────────────────────────────────────────────────────────
-  Estrutura do projeto:
-    index.html        → só a marcação (HTML) da página
-    css/style.css     → todo o visual (inclui celular/tablet no final)
-    js/config.js      → [🔥 FIREBASE] [☁️ CLOUDINARY] [🎵 MÚSICA] chaves e URLs
-    js/utils.js       → funções de apoio usadas por todos
-    js/music.js       → [🎵 MÚSICA] player de fundo
-    js/gallery.js     → [📷 FOTOS] galeria, filtros, lightbox, curtidas
-    js/admin.js       → login, upload, edição e exclusão de lembranças
-    js/background.js  → fundo da página
-    js/map.js         → mapa e enigmas
-    js/pet.js         → gatinho (Tamagotchi) + presentes + diário secreto
-    js/roleta.js      → roleta da noite
-    js/main.js        → liga tudo (botão "Entrar" e inicialização)
-    firestore.rules   → regras de segurança para colar no console do Firebase
+  index.html (estrutura) · css/style.css (visual) · js/ (comportamento)
+  Integrações: [🔥 FIREBASE] [☁️ CLOUDINARY] [🎵 MÚSICA] — chaves em js/config.js
 -->
 <html lang="pt-br">
 <head>
@@ -128,9 +115,7 @@
 
 
   <!-- ═════════════════════════════════════════════════════════════
-       3. MODAIS
-       Abrir/fechar: openModal('id') / closeModal('id') em js/utils.js
-       Qualquer botão com data-close="id" fecha o modal indicado.
+       3. MODAIS — botão com data-close="id" fecha o modal
        ═════════════════════════════════════════════════════════════ -->
 
   <!-- Login (chave mestra) — [🔥 FIREBASE AUTH] -->
@@ -200,7 +185,7 @@
 
   <!-- Tamagotchi — [💾 LOCAL] / [🔥 FIREBASE] a partir da data em config.js -->
   <div id="tamagotchi-modal" class="modal-overlay">
-    <div class="modal-box tamagotchi-container">
+    <div class="modal-box">
       <button class="modal-close" data-close="tamagotchi-modal" aria-label="Fechar">&times;</button>
       <h3 class="modal-title">Nosso Gatinho 🐾</h3>
 
@@ -277,27 +262,22 @@
        ═════════════════════════════════════════════════════════════ -->
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <!-- [🎵 MÚSICA] Player de fundo — a URL do MP3 fica em js/config.js -->
+  <!-- [🎵 MÚSICA] a URL do MP3 fica em js/config.js -->
   <audio id="music-player" controls loop preload="none"></audio>
 
   <button id="pet-fab" title="Cuidar do nosso gatinho" aria-label="Abrir o gatinho">🐱</button>
 
 
-  <!-- ═════════════════════════════════════════════════════════════
-       5. SCRIPTS (a ordem importa!)
-       ═════════════════════════════════════════════════════════════ -->
-  <!-- [🔥 FIREBASE] SDKs -->
+  <!-- [🔥 FIREBASE] -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-  <!-- Código do site -->
+  <!-- Código do site (a ordem importa) -->
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
-  <script src="js/music.js"></script>
   <script src="js/gallery.js"></script>
   <script src="js/admin.js"></script>
-  <script src="js/background.js"></script>
   <script src="js/map.js"></script>
   <script src="js/pet.js"></script>
   <script src="js/roleta.js"></script>

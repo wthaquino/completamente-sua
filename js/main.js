@@ -1,22 +1,26 @@
 /* ==================================================================
-   INICIALIZAÇÃO — o que acontece ao abrir a página e ao clicar "Entrar"
+   INICIALIZAÇÃO + [🎵 MÚSICA DE FUNDO]
    ================================================================== */
 
-// Ao abrir: fundo, pinos do mapa e o gatinho
-loadSettings();          // background.js
-carregarPinosDoBanco();  // map.js
-carregarPet();           // pet.js
+const musica = $('music-player');
+musica.src = MUSICA_FUNDO_URL;
 
-// Ao clicar em "Entrar"
-$('enterBtn').addEventListener('click', () => {
+loadSettings();          // fundo (admin.js)
+carregarPinosDoBanco();  // mapa (map.js)
+carregarPet();           // gatinho (pet.js)
+
+$('enterBtn').onclick = () => {
   $('intro-screen').classList.add('fade-out');
   createHeartShower();
-  tocarMusicaDeFundo();  // [🎵 MÚSICA] precisa acontecer dentro do clique
+
+  // O navegador só deixa tocar som depois de um clique — por isso fica aqui
+  musica.volume = MUSICA_VOLUME;
+  musica.play().catch(() => {});
 
   setTimeout(() => {
     $('intro-screen').classList.add('hidden');
     document.body.classList.remove('intro');
     $('main-content').classList.remove('hidden');
-    loadPhotos();        // [📷 FOTOS] gallery.js
+    loadPhotos();        // galeria (gallery.js)
   }, 1000);
-});
+};
